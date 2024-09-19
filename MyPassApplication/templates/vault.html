@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Vault{% endblock %}
+
+{% block content %}
+<h1>Your Vault</h1>
+<p>Here are all your stored passwords.</p>
+<ul>
+
+</ul>
+<a href="{% url 'create_password' %}" class="button">Add New Password</a>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Account{% endblock %}
+
+{% block content %}
+<h1>Welcome to Your Password Manager</h1>
+<p>This is your account page</p>
+<a href="{% url 'vault' %}" class="button">Go to Vault</a>
+{% endblock %}
