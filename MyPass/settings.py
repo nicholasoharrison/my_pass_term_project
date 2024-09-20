@@ -118,6 +118,6 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'MyPassApplication.CustomUser'
-
 LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = 'account'
+LOGIN_REDIRECT_URL = '/'

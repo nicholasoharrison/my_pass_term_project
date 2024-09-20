@@ -3,7 +3,10 @@
 {% block title %}Account{% endblock %}
 
 {% block content %}
-<h1>Welcome to Your Password Manager</h1>
-<p>This is your account page</p>
-<a href="{% url 'vault' %}" class="button">Go to Vault</a>
+<h1>Account</h1>
+        <a class="button" href="{% url 'change_password' %}">Change Password</a>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="button">Logout</button>
+        </form>
 {% endblock %}

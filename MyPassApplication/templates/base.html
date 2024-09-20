@@ -11,9 +11,14 @@
     <header>
         <nav>
             <ul>
-                <li><a class = button href="{% url 'create_password' %}">Create Password</a></li>
-                <li><a class = button href="{% url 'vault' %}">Vault</a></li>
-                <li><a class = button href="{% url 'account' %}">Account</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'create_password' %}">Create Password</a></li>
+                <li><a href="{% url 'vault' %}">Vault</a></li>
+                <li><a href="{% url 'account' %}">Account</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}">Register</a></li>
+            {% endif %}
             </ul>
         </nav>
     </header>
