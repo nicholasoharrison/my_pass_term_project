@@ -8,30 +8,56 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from .models import SessionManager
+from django.http import HttpResponseRedirect
+from functools import wraps
 
 
-@login_required
+
+def session_login_required(view_func): # this customer decorator will check to see if the user is 
+                                       # authenticated with session manager before giving them access to pages
+                                       # help from: https://www.geeksforgeeks.org/creating-custom-decorator-in-django-for-different-permissions/
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        session_manager = SessionManager()
+        session_manager.set_request(request)
+        if not session_manager.is_authenticated():
+            return HttpResponseRedirect('/login/') 
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
 def account(request):
-    return render(request, 'account.html')
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+    if session_manager.is_authenticated():
+        current_user = session_manager.get_current_user()
+        username = current_user.username  
+        return render(request, 'account.html', {'username': username})
+    else:
+        return redirect('login')
 
 def login_view(request):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
-            login(request, user)
+            session_manager.login(user)
             messages.success(request, "You are now logged in!")
             return redirect('account')
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, 'login.html')
 
-@login_required
+@session_login_required
 def vault(request):
     return render(request, 'vault.html')
 
-@login_required
+@session_login_required
 def create_password(request):
     return render(request, 'create_password.html')
 
@@ -50,7 +76,7 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request, 'register.html', {'form': form})
 
-@login_required
+@session_login_required
 def change_password(request):
     messages.get_messages(request).used = True
     if request.method == 'POST':
@@ -63,3 +89,12 @@ def change_password(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form})
+
+def logout_view(request):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+    session_manager.logout()
+    messages.success(request, "You have been successfully logged out.")
+    return redirect('login')
+
+
