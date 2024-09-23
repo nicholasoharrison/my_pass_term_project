@@ -26,13 +26,18 @@ def session_login_required(view_func): # this customer decorator will check to s
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
+
 def account(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
+
     if session_manager.is_authenticated():
         current_user = session_manager.get_current_user()
-        username = current_user.username  
-        return render(request, 'account.html', {'username': username})
+        if current_user:
+            username = current_user.username  
+            return render(request, 'account.html', {'username': username})
+        else:
+            return redirect('login')
     else:
         return redirect('login')
 
