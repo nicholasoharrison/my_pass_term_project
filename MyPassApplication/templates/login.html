@@ -11,14 +11,12 @@
     <main class="form-container">
         <h1>Login</h1>
         
-        {% if request.path != '/login/' %} <!-- This will only display messages that are not from the login screen -->
-            {% if messages %}
-                <ul>
-                 {% for message in messages %}
-                       <li>{{ message }}</li>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
                 {% endfor %}
-                </ul>
-            {% endif %}
+            </ul>
         {% endif %}
         
         <form method="post">

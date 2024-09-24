@@ -27,19 +27,29 @@ def session_login_required(view_func): # this customer decorator will check to s
     return _wrapped_view
 
 
+
 def account(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
 
+    if session_manager.has_timed_out():
+        session_manager.logout()
+        messages.get_messages(request).used = True
+        messages.warning(request, "Your account has been locked due to inactivity.")
+        return redirect('login')
+
     if session_manager.is_authenticated():
         current_user = session_manager.get_current_user()
         if current_user:
+            session_manager.update_last_activity()
             username = current_user.username  
             return render(request, 'account.html', {'username': username})
         else:
             return redirect('login')
     else:
         return redirect('login')
+
+
 
 def login_view(request):
     session_manager = SessionManager()
@@ -52,19 +62,44 @@ def login_view(request):
         
         if user is not None:
             session_manager.login(user)
+            messages.get_messages(request).used = True
             messages.success(request, "You are now logged in!")
             return redirect('account')
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, 'login.html')
 
+
+
 @session_login_required
 def vault(request):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+    if session_manager.has_timed_out():
+        session_manager.logout()
+        messages.get_messages(request).used = True
+        messages.warning(request, "Your account has been locked due to inactivity.")
+        return redirect('login')
+    
+    session_manager.update_last_activity()
     return render(request, 'vault.html')
+
+
 
 @session_login_required
 def create_password(request):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+    if session_manager.has_timed_out():
+        session_manager.logout()
+        messages.get_messages(request).used = True
+        messages.warning(request, "Your account has been locked due to inactivity.")
+        return redirect('login')
+    
+    session_manager.update_last_activity()
     return render(request, 'create_password.html')
+
+
 
 def register(request):
     messages.get_messages(request).used = True
@@ -73,32 +108,50 @@ def register(request):
         if form.is_valid():
             user = form.save() 
             login(request, user)  
+            messages.get_messages(request).used = True
             messages.success(request, "Account created successfully!")
             return redirect('account')
         else:
+            messages.get_messages(request).used = True
             messages.error(request, "There was an error in your form.")
     else:
         form = CustomUserCreationForm()
     return render(request, 'register.html', {'form': form})
 
+
+
 @session_login_required
 def change_password(request):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+
+    if session_manager.has_timed_out():
+        session_manager.logout() 
+        messages.get_messages(request).used = True
+        messages.warning(request, "Your account has been locked due to inactivity.")
+        return redirect('login')
+    
     messages.get_messages(request).used = True
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
+        session_manager.update_last_activity()
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
+            messages.get_messages(request).used = True
             messages.success(request, 'Your password was successfully updated!')
             return redirect('account')
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form})
 
+
+
 def logout_view(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
     session_manager.logout()
+    messages.get_messages(request).used = True
     messages.success(request, "You have been successfully logged out.")
     return redirect('login')
 
