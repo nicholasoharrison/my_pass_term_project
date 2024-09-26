@@ -32,3 +32,17 @@ class CustomUserCreationForm(UserCreationForm):
         if not any(char.isalpha() for char in password1):
             raise forms.ValidationError("The password must contain at least one letter.")
         return password1
+
+
+
+class SecurityQuestionForm(forms.Form):
+    answer = forms.CharField(
+        label='Answer', 
+        max_length=100, 
+        widget=forms.TextInput(attrs={'placeholder': 'Enter your answer'})
+    )
+
+
+
+class UsernameForm(forms.Form):
+    username = forms.CharField(max_length=150, required=True, label='Enter your username')

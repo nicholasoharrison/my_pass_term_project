@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib.auth.models import User
+
 
 
 class SessionManager: # follows Singleton pattern to only allow one session at a time
@@ -44,3 +46,13 @@ class SessionManager: # follows Singleton pattern to only allow one session at a
             return timezone.now() - last_activity_time > timedelta(minutes=1) # if the time of th elast activity was more than a minute ago
                                                                               # true is returned for timeout, user will be sent back to login
         return False
+
+
+
+class SecurityQuestion(models.Model): # model to store the answer to their 3 security questions
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    q1Answer = models.CharField(max_length=100)
+    q2Answer = models.CharField(max_length=100)
+    q3Answer = models.CharField(max_length=100)
+
+

@@ -1,6 +1,6 @@
 import email
 from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, SecurityQuestionForm, UsernameForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -11,6 +11,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from .models import SessionManager
 from django.http import HttpResponseRedirect
 from functools import wraps
+from .handlers import Question1Handler, Question2Handler, Question3Handler
 
 
 
@@ -156,3 +157,72 @@ def logout_view(request):
     return redirect('login')
 
 
+
+def forgot_password(request):
+    if 'username' not in request.session:  
+        if request.method == 'POST':
+            form = UsernameForm(request.POST)
+            if form.is_valid():
+                username = form.cleaned_data['username']
+                try:
+                    user = User.objects.get(username=username)
+                    request.session['username'] = username  
+                    request.session['current_question'] = 'favorite_color' 
+                    return redirect('forgot_password') 
+                except User.DoesNotExist:
+                    messages.error(request, "Username not found.")
+        else:
+            form = UsernameForm()
+        return render(request, 'enter_username.html', {'form': form})
+    
+    if request.method == 'POST':
+        username = request.POST['username']
+        user = User.objects.get(username=username)
+        
+    first_handler = Question1Handler()
+    second_handler = Question2Handler()
+    third_handler = Question3Handler()
+
+    if request.method == 'POST':
+        form = SecurityQuestionForm(request.POST)
+        
+        if form.is_valid():
+            answer = form.cleaned_data['answer']
+            
+            if not request.session.get('current_question'):
+                request.session['current_question'] = 'favorite_color'
+
+            current_question = request.session['current_question']
+
+            if current_question == 'favorite_color':
+                if first_handler.handle(user, answer):
+                    request.session['current_question'] = 'birth_city'
+                    form = SecurityQuestionForm()
+                    messages.success(request, "Correct! Next question.")
+                else:
+                    messages.error(request, "Incorrect answer.")
+                    return render(request, 'forgot_password.html', {'form': form})
+
+            elif current_question == 'birth_city':
+                if second_handler.handle(user, answer):
+                    request.session['current_question'] = 'first_employer'
+                    form = SecurityQuestionForm()
+                    messages.success(request, "Correct! Next question.")
+                else:
+                    messages.error(request, "Incorrect answer.")
+                    return render(request, 'forgot_password.html', {'form': form})
+
+            elif current_question == 'first_employer':
+                if third_handler.handle(user, answer):
+                    messages.success(request, "All answers correct! You can now reset your password.")
+                    return redirect('password_reset')
+                else:
+                    messages.error(request, "Incorrect answer.")
+                    return render(request, 'forgot_password.html', {'form': form})
+    
+    else:
+        form = SecurityQuestionForm()
+        if not request.session.get('current_question'):
+            request.session['current_question'] = 'favorite_color'
+
+    return render(request, 'forgot_password.html', {'form': form})
