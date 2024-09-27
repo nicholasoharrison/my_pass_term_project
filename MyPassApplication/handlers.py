@@ -20,7 +20,7 @@ class SecurityQuestionHandler(ABC):
 
 class Question1Handler(SecurityQuestionHandler):
     def handle(self, user, answer):
-        if answer == user.securityquestion.q1Answer:
+        if answer == user.security_question.q1Answer:
             if self._next_handler:
                 return self._next_handler.handle(user, answer)
             return True
@@ -28,7 +28,7 @@ class Question1Handler(SecurityQuestionHandler):
 
 class Question2Handler(SecurityQuestionHandler):
     def handle(self, user, answer):
-        if answer == user.securityquestion.q2Answer:
+        if answer == user.security_question.q2Answer:
             if self._next_handler:
                 return self._next_handler.handle(user, answer)
             return True
@@ -36,7 +36,7 @@ class Question2Handler(SecurityQuestionHandler):
 
 class Question3Handler(SecurityQuestionHandler):
     def handle(self, user, answer):
-        if answer == user.securityquestion.q3Answer:
+        if answer == user.security_question.q3Answer:
             return True
         return False
 # End of Chain of Responsibility Implementation --------------------------------------------------------

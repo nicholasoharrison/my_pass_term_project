@@ -103,20 +103,17 @@ def create_password(request):
 
 
 def register(request):
-    messages.get_messages(request).used = True
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save() 
-            login(request, user)  
-            messages.get_messages(request).used = True
-            messages.success(request, "Account created successfully!")
-            return redirect('account')
+            form.save()
+            messages.success(request, 'Account created successfully!')
+            return redirect('login')
         else:
-            messages.get_messages(request).used = True
-            messages.error(request, "There was an error in your form.")
+            messages.error(request, 'There was an error with your registration.')
     else:
         form = CustomUserCreationForm()
+    
     return render(request, 'register.html', {'form': form})
 
 
@@ -158,27 +155,33 @@ def logout_view(request):
 
 
 
-def forgot_password(request):
-    if 'username' not in request.session:  
-        if request.method == 'POST':
-            form = UsernameForm(request.POST)
-            if form.is_valid():
-                username = form.cleaned_data['username']
-                try:
-                    user = User.objects.get(username=username)
-                    request.session['username'] = username  
-                    request.session['current_question'] = 'favorite_color' 
-                    return redirect('forgot_password') 
-                except User.DoesNotExist:
-                    messages.error(request, "Username not found.")
-        else:
-            form = UsernameForm()
-        return render(request, 'enter_username.html', {'form': form})
-    
+def enter_username(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        user = User.objects.get(username=username)
-        
+        form = UsernameForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            try:
+                user = User.objects.get(username=username)
+                request.session['username'] = username
+                # request.session['current_question'] = 'favorite_color'
+                return redirect('forgot_password')
+            except User.DoesNotExist:
+                messages.error(request, "Username not found.")
+        return render(request, 'enter_username.html', {'form': form})
+    else:
+        form = UsernameForm()
+    return render(request, 'enter_username.html', {'form': form})
+
+
+
+def forgot_password(request):
+    if 'username' not in request.session:
+        return redirect('enter_username')
+
+    username = request.session['username']
+    user = User.objects.get(username=username)
+    print(f"Username stored in session: {request.session.get('username')}")
+    
     first_handler = Question1Handler()
     second_handler = Question2Handler()
     third_handler = Question3Handler()
@@ -189,10 +192,7 @@ def forgot_password(request):
         if form.is_valid():
             answer = form.cleaned_data['answer']
             
-            if not request.session.get('current_question'):
-                request.session['current_question'] = 'favorite_color'
-
-            current_question = request.session['current_question']
+            current_question = request.session.get('current_question', 'favorite_color')
 
             if current_question == 'favorite_color':
                 if first_handler.handle(user, answer):
@@ -219,10 +219,7 @@ def forgot_password(request):
                 else:
                     messages.error(request, "Incorrect answer.")
                     return render(request, 'forgot_password.html', {'form': form})
-    
     else:
         form = SecurityQuestionForm()
-        if not request.session.get('current_question'):
-            request.session['current_question'] = 'favorite_color'
 
     return render(request, 'forgot_password.html', {'form': form})

@@ -1,9 +1,26 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from .models import SecurityQuestion
 
 class CustomUserCreationForm(UserCreationForm):
+    q1Answer = forms.CharField(label="What is your favorite color?", max_length=100)
+    q2Answer = forms.CharField(label="What city were you born in?", max_length=100)
+    q3Answer = forms.CharField(label="What is the name of your first employer?", max_length=100)
+
     email = forms.EmailField(required=True)
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+            SecurityQuestion.objects.create(
+                user=user,
+                q1Answer=self.cleaned_data.get('q1Answer'),
+                q2Answer=self.cleaned_data.get('q2Answer'),
+                q3Answer=self.cleaned_data.get('q3Answer'),
+            )
+        return user
 
     class Meta:
         model = User

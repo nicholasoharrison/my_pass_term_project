@@ -50,9 +50,8 @@ class SessionManager: # follows Singleton pattern to only allow one session at a
 
 
 class SecurityQuestion(models.Model): # model to store the answer to their 3 security questions
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='security_question')
     q1Answer = models.CharField(max_length=100)
     q2Answer = models.CharField(max_length=100)
     q3Answer = models.CharField(max_length=100)
-
 
