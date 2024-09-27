@@ -10,11 +10,11 @@ class SessionManager: # follows Singleton pattern to only allow one session at a
 
     def __new__(cls):
         if cls._instance is None: # only creates a new instance of SessionManager if there is NONE
-            cls._instance = super(SessionManager, cls).__new__(cls)
+            cls._instance = super(SessionManager, cls).__new__(cls) # see link for reference line of code: https://medium.com/analytics-vidhya/how-to-create-a-thread-safe-singleton-class-in-python-822e1170a7f6
             cls._instance.initialized = False 
-        return cls._instance # otherwise returns the current instance of SessionManager
+        return cls._instance # otherwise returns the current instance of SessionManager (so that only one can be created)
 
-    def __init__(self): # constructor (that is not called due to Singleton pattern)
+    def __init__(self): # constructor (that is only called once by __new__ according to the Singleton pattern
         if not self.initialized:
             self.current_user = None  
             self.initialized = True  
@@ -22,10 +22,12 @@ class SessionManager: # follows Singleton pattern to only allow one session at a
     def set_request(self, request):
         self.request = request 
 
+    # indicates that a user is logged in and authenticated
     def login(self, user):
         self.current_user = user  
         self.request.session['is_authenticated'] = True 
 
+    # removes the user from the session and clears session data
     def logout(self):
         self.current_user = None  
         self.request.session.flush() 
@@ -43,7 +45,7 @@ class SessionManager: # follows Singleton pattern to only allow one session at a
         last_activity = self.request.session.get('last_activity') # retrieves the time of the last activity performed
         if last_activity:
             last_activity_time = timezone.datetime.fromisoformat(last_activity)
-            return timezone.now() - last_activity_time > timedelta(minutes=1) # if the time of th elast activity was more than a minute ago
+            return timezone.now() - last_activity_time > timedelta(minutes=1) # if the time of the last activity was more than a minute ago
                                                                               # true is returned for timeout, user will be sent back to login
         return False
 
