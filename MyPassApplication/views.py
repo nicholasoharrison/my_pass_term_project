@@ -229,17 +229,14 @@ def forgot_password(request):
 def password_reset(request):
     if request.method == 'POST':
         username = request.POST.get('username')
-
+        new_password = request.POST.get('new_password')
         try:
             user = User.objects.get(username=username)
-            form = PasswordChangeForm(user, request.POST)
-            if form.is_valid():
-                user.save()
-                update_session_auth_hash(request, user) 
-                messages.get_messages(request).used = True
-                messages.success(request, 'Your password has been reset successfully.')
-                return redirect('login')  
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, 'Your password has been reset successfully.')
+            return redirect('login')
         except User.DoesNotExist:
-            messages.error(request, 'User does not exist.')
+            messages.error(request, 'User does not exist. Please check your username.')
 
     return render(request, 'password_reset.html')
