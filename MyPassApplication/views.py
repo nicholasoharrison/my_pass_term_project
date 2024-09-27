@@ -163,7 +163,7 @@ def enter_username(request):
             try:
                 user = User.objects.get(username=username)
                 request.session['username'] = username
-                # request.session['current_question'] = 'favorite_color'
+                request.session['current_question'] = 'favorite_color'
                 return redirect('forgot_password')
             except User.DoesNotExist:
                 messages.error(request, "Username not found.")
@@ -223,3 +223,23 @@ def forgot_password(request):
         form = SecurityQuestionForm()
 
     return render(request, 'forgot_password.html', {'form': form})
+
+
+
+def password_reset(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+
+        try:
+            user = User.objects.get(username=username)
+            form = PasswordChangeForm(user, request.POST)
+            if form.is_valid():
+                user.save()
+                update_session_auth_hash(request, user) 
+                messages.get_messages(request).used = True
+                messages.success(request, 'Your password has been reset successfully.')
+                return redirect('login')  
+        except User.DoesNotExist:
+            messages.error(request, 'User does not exist.')
+
+    return render(request, 'password_reset.html')
