@@ -14,11 +14,6 @@ class SessionManager: # follows Singleton pattern to only allow one session at a
             cls._instance.initialized = False 
         return cls._instance # otherwise returns the current instance of SessionManager (so that only one can be created)
 
-    def __init__(self): # constructor (that is only called once by __new__ according to the Singleton pattern
-        if not self.initialized:
-            self.current_user = None  
-            self.initialized = True  
-
     def set_request(self, request):
         self.request = request 
 
