@@ -25,5 +25,17 @@
     <footer>
         <p>&copy; CIS 476 Password Manager  App</p>
     </footer>
+    <script> 
+        document.addEventListener('copy', function() {
+            console.log('Text copied to clipboard.');
+            setTimeout(function() {
+                navigator.clipboard.writeText(' ').then(function() {
+                    console.log('Clipboard cleared automatically after 60 seconds.');
+                }).catch(function(err) {
+                    console.error('Failed to clear clipboard automatically:', err);
+                });
+            }, 60000);
+        });
+    </script>
 </body>
 </html>
