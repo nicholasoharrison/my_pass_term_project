@@ -1,4 +1,5 @@
-To run the code ensure you have python version installed: (will fill out when will know).
+To run the code ensure you have python version installed: (python version), needs 3.12.1.
 Run in terminal two commands: 
-pip install -r requirements.txt (will appear when will exist)
+pip install -r requirements.txt 
+To start the application:
 python manage.py runserver
