@@ -4,9 +4,15 @@
 
 {% block content %}
 <h1>Your Vault</h1>
-<p>Here are all your stored passwords.</p>
+<p>Here are all your stored passwords:</p>
 <ul>
-
+    {% for account in user_accounts %}
+    <li>
+        <strong>{{ account.name }}:</strong> {{ account.password }}
+    </li>
+    {% empty %}
+    <li>No passwords saved yet.</li>
+    {% endfor %}
 </ul>
 <a href="{% url 'create_password' %}" class="button">Add New Password</a>
 {% endblock %}

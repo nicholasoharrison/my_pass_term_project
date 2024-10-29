@@ -8,11 +8,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import SessionManager
+from .models import SessionManager, Password, Account
 from django.http import HttpResponseRedirect
 from functools import wraps
 from .handlers import Question1Handler, Question2Handler, Question3Handler
-
+from .password_builder import PasswordDirector, SimplePasswordBuilder, ComplexPasswordBuilder, PasswordBuilder
 
 
 def session_login_required(view_func): # this customer decorator will check to see if the user is 
@@ -83,7 +83,11 @@ def vault(request):
         return redirect('login')
     
     session_manager.update_last_activity()
-    return render(request, 'vault.html')
+
+    current_user = session_manager.get_current_user()
+
+    user_accounts = Account.objects.filter(user = current_user)
+    return render(request, 'vault.html', {'user_accounts': user_accounts})
 
 
 
@@ -98,7 +102,36 @@ def create_password(request):
         return redirect('login')
     
     session_manager.update_last_activity()
-    return render(request, 'create_password.html')
+
+
+    password = None
+    if request.method == 'POST':
+        account_name = request.POST.get('account_name')
+        complexity = request.POST.get('complexity')
+        custom_password = request.POST.get('custom_password')
+        
+        if custom_password:
+            password = custom_password
+            messages.success(request, "Your custom password has been saved.")
+        else:
+            if complexity == 'simple':
+                builder = SimplePasswordBuilder()
+            elif complexity == 'complex':
+                builder = ComplexPasswordBuilder()
+            else:
+                messages.error(request, 'Invalid password complexity selection.')
+                return render(request, 'create_password.html')
+
+            director = PasswordDirector(builder)
+            password = director.create_password()
+            
+        current_user = session_manager.get_current_user()
+
+        messages.success(request, f"Generated Password: {password}")
+        Account.objects.create(user=current_user, name=account_name, password=password)
+        return redirect('vault')
+
+    return render(request, 'create_password.html', {'password': password})
 
 
 
