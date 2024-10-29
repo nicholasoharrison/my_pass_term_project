@@ -14,6 +14,7 @@ class SessionManager: # follows Singleton pattern to only allow one session at a
         if cls._instance is None: # only creates a new instance of SessionManager if there is NONE
             cls._instance = super(SessionManager, cls).__new__(cls) # see link for reference line of code: https://medium.com/analytics-vidhya/how-to-create-a-thread-safe-singleton-class-in-python-822e1170a7f6
             cls._instance.initialized = False 
+            cls._instance.current_user = None
         return cls._instance # otherwise returns the current instance of SessionManager (so that only one can be created)
 
     def set_request(self, request):
@@ -61,5 +62,14 @@ class Password:
 
     def __str__(self):
         return self.value
+    
+
+class Account(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vault')
+    name = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name} : {self.password}"
     
 
