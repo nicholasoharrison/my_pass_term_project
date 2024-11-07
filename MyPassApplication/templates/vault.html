@@ -9,6 +9,8 @@
     {% for account in user_accounts %}
     <li>
         <strong>{{ account.name }}:</strong> {{ account.password }}
+        <a href="{% url 'edit_password' account.id %}" class="button">Edit</a>
+        <a href="{% url 'delete_password' account.id %}" class="button">Delete</a>
     </li>
     {% empty %}
     <li>No passwords saved yet.</li>

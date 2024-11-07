@@ -1,6 +1,6 @@
 import email
-from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm, SecurityQuestionForm, UsernameForm
+from django.shortcuts import get_object_or_404, render, redirect
+from .forms import CustomUserCreationForm, SecurityQuestionForm, UsernameForm, EditPasswordForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -273,3 +273,31 @@ def password_reset(request):
             messages.error(request, 'User does not exist. Please check your username.')
 
     return render(request, 'password_reset.html')
+
+
+
+def edit_password(request, password_id):
+    session_manager = SessionManager()
+    current_user = session_manager.get_current_user()
+    account = get_object_or_404(Account, id=password_id, user=current_user)
+
+    if request.method == 'POST':
+        form = EditPasswordForm(request.POST, instance=account)
+        if form.is_valid():
+            form.save()
+            return redirect('vault')
+    else:
+        form = EditPasswordForm(instance=account)
+
+    return render(request, 'edit_password.html', {'form': form, 'account': account})
+
+def delete_password(request, password_id):
+    session_manager = SessionManager()
+    current_user = session_manager.get_current_user()
+    account = get_object_or_404(Account, id=password_id, user=current_user)
+
+    if request.method == 'POST':
+        account.delete()
+        return redirect('vault') 
+
+    return render(request, 'confirm_delete.html', {'account': account})
