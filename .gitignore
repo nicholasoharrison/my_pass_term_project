@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.mo
+*.egg-info/
+local_settings.py
+
+# If you are using PyCharm or other IDEs, exclude their project files
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# Database files
+*.sqlite3
+*.db
+
+# Media folder (if you have one for user-uploaded content)
+media/
+
+# Static files (if you collect static files here)
+staticfiles/
+
+# Virtual environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Cache files
+*.cache
+*.swp
+*.swo
+
+# GitHub Codespaces specific files
+*.codespaces
+*.devcontainer
+*.history
+
+# MacOS files
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# Secret configuration files (make sure to exclude any files with sensitive information)
+config/settings/secret.py
