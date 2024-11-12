@@ -144,6 +144,7 @@ def register(request):
             return redirect('login')
         else:
             messages.error(request, 'There was an error with your registration.')
+            
     else:
         form = CustomUserCreationForm()
     
@@ -300,4 +301,5 @@ def delete_password(request, password_id):
         account.delete()
         return redirect('vault') 
 
+    return render(request, 'confirm_delete.html', {'account': account})
     return render(request, 'confirm_delete.html', {'account': account})
