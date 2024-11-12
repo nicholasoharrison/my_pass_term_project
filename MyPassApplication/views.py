@@ -111,6 +111,7 @@ def register(request):
             return redirect('login')
         else:
             messages.error(request, 'There was an error with your registration.')
+            
     else:
         form = CustomUserCreationForm()
     
