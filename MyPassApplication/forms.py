@@ -10,6 +10,10 @@ class CustomUserCreationForm(UserCreationForm):
 
     email = forms.EmailField(required=True)
 
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+
     def save(self, commit=True):
         user = super().save(commit=False)
         if commit:
@@ -21,10 +25,15 @@ class CustomUserCreationForm(UserCreationForm):
                 q3Answer=self.cleaned_data.get('q3Answer'),
             )
         return user
+    
+    #fixing doubled or error messages
+    def __init__(self, *args, **kwargs):
+        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
+        # Remove default password validators
+        self.fields['password1'].validators = []
+        self.fields['password2'].validators = []
 
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'password1', 'password2')
+   
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
@@ -39,16 +48,35 @@ class CustomUserCreationForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("This email is already registered.")
         return email
+    
+    # This approach prevents the user from registering if the password is weak.
 
     def clean_password1(self):
         password1 = self.cleaned_data.get('password1')
+        warnings = []
         if len(password1) < 8:
-            raise forms.ValidationError("The password must be at least 8 characters long.")
+            warnings.append("Your password is less than 8 characters long.")
         if not any(char.isdigit() for char in password1):
-            raise forms.ValidationError("The password must contain at least one digit.")
+            warnings.append("Your password is entirely numeric.")
         if not any(char.isalpha() for char in password1):
-            raise forms.ValidationError("The password must contain at least one letter.")
+            warnings.append("The password must contain at least one letter.")
+        if warnings:
+            # Store warnings in the form's non-field errors
+            self.add_error('password1', 'Weak password:')
+            for warning in warnings:
+                self.add_error('password1', warning)
         return password1
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            self.add_error('password2', "Passwords do not match.")
+
+        return cleaned_data
+
 
 
 
@@ -63,9 +91,3 @@ class SecurityQuestionForm(forms.Form):
 
 class UsernameForm(forms.Form):
     username = forms.CharField(max_length=150, required=True, label='Enter your username')
-
-
-class EditPasswordForm(forms.ModelForm):
-    class Meta:
-        model = Account
-        fields = ['name', 'password']
