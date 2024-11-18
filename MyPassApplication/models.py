@@ -2,9 +2,6 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
-from abc import ABC, abstractmethod
-import random
-import string
 
 
 class SessionManager:
@@ -74,7 +71,6 @@ class Account(models.Model):
         return f"{self.name} : {self.password}"
 
 
-# Vault functionality
 class Login(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     site_name = models.CharField(max_length=255)
@@ -98,7 +94,6 @@ class CreditCard(models.Model):
     def __str__(self):
         return f"Card ending in {self.card_number[-4:]}"
 
-    # Notification for expiration
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.check_expiration()
@@ -115,9 +110,9 @@ class Identity(models.Model):
     full_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
     passport_number = models.CharField(max_length=20, blank=True)
-    passport_expiration_date = models.DateField(null=True, blank=True)  # Added field
+    passport_expiration_date = models.DateField(null=True, blank=True)
     license_number = models.CharField(max_length=20, blank=True)
-    license_expiration_date = models.DateField(null=True, blank=True)   # Added field
+    license_expiration_date = models.DateField(null=True, blank=True)
     social_security_number = models.CharField(max_length=11, blank=True)
     passport_notified = models.BooleanField(default=False)
     license_notified = models.BooleanField(default=False)
@@ -126,7 +121,6 @@ class Identity(models.Model):
     def __str__(self):
         return self.full_name
 
-    # Notification for expiration
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.check_passport_expiration()
