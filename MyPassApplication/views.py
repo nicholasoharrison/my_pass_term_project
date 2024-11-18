@@ -28,7 +28,7 @@ def session_login_required(view_func): # this customer decorator will check to s
     return _wrapped_view
 
 
-
+#Test
 def account(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
