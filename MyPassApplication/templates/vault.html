@@ -1,20 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Vault{% endblock %}
-
 {% block content %}
-<h1>Your Vault</h1>
-<p>Here are all your stored passwords:</p>
+<h1>Welcome to Your Vault</h1>
 <ul>
-    {% for account in user_accounts %}
-    <li>
-        <strong>{{ account.name }}:</strong> {{ account.password }}
-        <a href="{% url 'edit_password' account.id %}" class="button">Edit</a>
-        <a href="{% url 'delete_password' account.id %}" class="button">Delete</a>
-    </li>
-    {% empty %}
-    <li>No passwords saved yet.</li>
-    {% endfor %}
+
+    <li><a href="{% url 'login_list' %}">Logins</a></li>
+    <li><a href="{% url 'creditcard_list' %}">Credit Cards</a></li>
+    <li><a href="{% url 'identity_list' %}">Identities</a></li>
+    <li><a href="{% url 'securenote_list' %}">Secure Notes</a></li>
 </ul>
 <a href="{% url 'create_password' %}" class="button">Add New Password</a>
+
 {% endblock %}
