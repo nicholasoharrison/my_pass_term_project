@@ -270,5 +270,3 @@ def password_reset(request):
 
 #     return render(request, 'confirm_delete.html', {'account': account})
 #    #fixed duplicate
-
-
