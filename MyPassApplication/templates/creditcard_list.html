@@ -1,0 +1,21 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Your Credit Cards</h2>
+<a href="{% url 'creditcard_create' %}">Add New Credit Card</a>
+<ul>
+    {% for card in creditcards %}
+    <li>
+        <a href="{% url 'creditcard_detail' card.pk %}">
+            {{ card.cardholder_name }} - Card ending in {{ card.card_number|slice:"-4:" }}
+        </a>
+        (<a href="{% url 'creditcard_edit' card.pk %}">Edit</a>,
+         <a href="{% url 'creditcard_delete' card.pk %}">Delete</a>)
+    </li>
+    {% empty %}
+    <li>No credit cards saved.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+

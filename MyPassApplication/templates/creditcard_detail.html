@@ -1,0 +1,12 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Credit Card Details</h2>
+<p><strong>Cardholder Name:</strong> {{ creditcard.cardholder_name }}</p>
+<p><strong>Card Number:</strong> **** **** **** {{ creditcard.card_number|slice:"-4:" }}</p>
+<p><strong>Expiration Date:</strong> {{ creditcard.expiration_date|date:"F Y" }}</p>
+<p><strong>CVV:</strong> ***</p>
+<p><strong>Billing Address:</strong> {{ creditcard.billing_address }}</p>
+<a href="{% url 'creditcard_list' %}">Back to Credit Cards</a>
+{% endblock %}

@@ -24,12 +24,15 @@ local_settings.py
 # Database files
 *.sqlite3
 *.db
+db.sqlite3
 
 # Media folder (if you have one for user-uploaded content)
 media/
 
 # Static files (if you collect static files here)
 staticfiles/
+/static/
+*.log
 
 # Virtual environment
 venv/
@@ -58,3 +61,6 @@ venv.bak/
 
 # Secret configuration files (make sure to exclude any files with sensitive information)
 config/settings/secret.py
+
+# Exclude migration cache files
+MyPassApplication/migrations/*.pyc

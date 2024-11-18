@@ -269,4 +269,3 @@ def password_reset(request):
 #         return redirect('vault') 
 
 #     return render(request, 'confirm_delete.html', {'account': account})
-#    #fixed duplicate

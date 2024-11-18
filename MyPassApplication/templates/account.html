@@ -3,7 +3,7 @@
 <p>Your username: <strong>{{ username }}</strong></p>
 
 <!-- Link to Vault -->
-<a href="{% url 'vault_home' %}">Go to Vault</a>
+<a href="{% url 'vault_home' %}" class="button">Go to Vault</a>
 
 <a class="button" href="{% url 'change_password' %}">Change Password</a>
 <form method="post" action="{% url 'logout' %}">
@@ -11,3 +11,4 @@
     <button type="submit" class="button">Logout</button>
 </form>
 {% endblock %}
+

@@ -2,61 +2,52 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
-from abc import ABC, abstractmethod
-import random
-import string
 
 
-class SessionManager: # follows Singleton pattern to only allow one session at a time
-    _instance = None 
+class SessionManager:
+    _instance = None
 
     def __new__(cls):
-        if cls._instance is None: # only creates a new instance of SessionManager if there is NONE
-            cls._instance = super(SessionManager, cls).__new__(cls) # see link for reference line of code: https://medium.com/analytics-vidhya/how-to-create-a-thread-safe-singleton-class-in-python-822e1170a7f6
-            cls._instance.initialized = False 
+        if cls._instance is None:
+            cls._instance = super(SessionManager, cls).__new__(cls)
+            cls._instance.initialized = False
             cls._instance.current_user = None
-        return cls._instance # otherwise returns the current instance of SessionManager (so that only one can be created)
+        return cls._instance
 
     def set_request(self, request):
-        self.request = request 
+        self.request = request
 
-    # indicates that a user is logged in and authenticated
-    #store the user's ID in the session. 
-    # Then, in the get_current_user method, retrieve the user from the database using the ID stored in the session.
     def login(self, user):
-      self.request.session['is_authenticated'] = True
-      self.request.session['user_id'] = user.id
+        self.request.session['is_authenticated'] = True
+        self.request.session['user_id'] = user.id
 
-
-    # removes the user from the session and clears session data
     def logout(self):
-       self.request.session.flush()
-
+        self.request.session.flush()
 
     def is_authenticated(self):
         return self.request.session.get('is_authenticated', False)
 
     def get_current_user(self):
-      user_id = self.request.session.get('user_id')
-      if user_id:
-            return User.objects.get(id=user_id)
-      return None
+        user_id = self.request.session.get('user_id')
+        if user_id:
+            try:
+                return User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return None
+        return None
 
-    
     def update_last_activity(self):
-        self.request.session['last_activity'] = timezone.now().isoformat() # gets the time of the activity that was last performed
+        self.request.session['last_activity'] = timezone.now().isoformat()
 
     def has_timed_out(self):
-        last_activity = self.request.session.get('last_activity') # retrieves the time of the last activity performed
+        last_activity = self.request.session.get('last_activity')
         if last_activity:
             last_activity_time = timezone.datetime.fromisoformat(last_activity)
-            return timezone.now() - last_activity_time > timedelta(minutes=1) # if the time of the last activity was more than a minute ago
-                                                                              # true is returned for timeout, user will be sent back to login
+            return timezone.now() - last_activity_time > timedelta(minutes=1)
         return False
 
 
-
-class SecurityQuestion(models.Model): # model to store the answer to their 3 security questions
+class SecurityQuestion(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='security_question')
     q1Answer = models.CharField(max_length=100)
     q2Answer = models.CharField(max_length=100)
@@ -77,9 +68,9 @@ class Account(models.Model):
     password = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.name} : {self.password}"    
+        return f"{self.name} : {self.password}"
 
-#vault functionality
+
 class Login(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     site_name = models.CharField(max_length=255)
@@ -91,6 +82,7 @@ class Login(models.Model):
     def __str__(self):
         return f"{self.site_name} ({self.username})"
 
+
 class CreditCard(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     cardholder_name = models.CharField(max_length=255)
@@ -98,10 +90,10 @@ class CreditCard(models.Model):
     expiration_date = models.DateField()
     cvv = models.CharField(max_length=4)
     billing_address = models.TextField(blank=True)
-    # def __str__(self):
-    #     return f"Card ending in {self.card_number[-4:]}"
 
-#added as part of notification system
+    def __str__(self):
+        return f"Card ending in {self.card_number[-4:]}"
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.check_expiration()
@@ -109,10 +101,8 @@ class CreditCard(models.Model):
     def check_expiration(self):
         upcoming_date = timezone.now().date() + timedelta(days=30)
         if self.expiration_date and self.expiration_date <= upcoming_date:
-            # Create a notification
             message = f"Your credit card ending in {self.card_number[-4:]} is expiring on {self.expiration_date}."
             Notification.objects.create(user=self.user, message=message)
-
 
 
 class Identity(models.Model):
@@ -120,34 +110,39 @@ class Identity(models.Model):
     full_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
     passport_number = models.CharField(max_length=20, blank=True)
+    passport_expiration_date = models.DateField(null=True, blank=True)
     license_number = models.CharField(max_length=20, blank=True)
+    license_expiration_date = models.DateField(null=True, blank=True)
     social_security_number = models.CharField(max_length=11, blank=True)
-    #added  to check expirations
     passport_notified = models.BooleanField(default=False)
     license_notified = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
 
-#added as part of notification system
+    def __str__(self):
+        return self.full_name
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.check_passport_expiration()
         self.check_license_expiration()
 
-        # def __str__(self):
-        #   return self.full_name
-
     def check_passport_expiration(self):
         upcoming_date = timezone.now().date() + timedelta(days=30)
         if self.passport_expiration_date and self.passport_expiration_date <= upcoming_date:
-            message = f"Your passport is expiring on {self.passport_expiration_date}."
-            Notification.objects.create(user=self.user, message=message)
+            if not self.passport_notified:
+                message = f"Your passport is expiring on {self.passport_expiration_date}."
+                Notification.objects.create(user=self.user, message=message)
+                self.passport_notified = True
+                super().save(update_fields=['passport_notified'])
 
     def check_license_expiration(self):
         upcoming_date = timezone.now().date() + timedelta(days=30)
         if self.license_expiration_date and self.license_expiration_date <= upcoming_date:
-            message = f"Your driver's license is expiring on {self.license_expiration_date}."
-            Notification.objects.create(user=self.user, message=message)
-
+            if not self.license_notified:
+                message = f"Your driver's license is expiring on {self.license_expiration_date}."
+                Notification.objects.create(user=self.user, message=message)
+                self.license_notified = True
+                super().save(update_fields=['license_notified'])
 
 
 class SecureNote(models.Model):
@@ -158,6 +153,7 @@ class SecureNote(models.Model):
     def __str__(self):
         return self.title
 
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
@@ -165,7 +161,4 @@ class Notification(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Notification for {self.user.username}: {self.message}"        
-    
-
-
+        return f"Notification for {self.user.username}: {self.message}"
