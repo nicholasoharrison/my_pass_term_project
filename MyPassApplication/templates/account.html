@@ -5,9 +5,13 @@
 {% block content %}
 <h1>Account</h1>
 <p>Your username: <strong>{{ username }}</strong></p>
-        <a class="button" href="{% url 'change_password' %}">Change Password</a>
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="button">Logout</button>
-        </form>
+
+<!-- Link to Vault -->
+<a href="{% url 'vault_home' %}">Go to Vault</a>
+
+<a class="button" href="{% url 'change_password' %}">Change Password</a>
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="button">Logout</button>
+</form>
 {% endblock %}

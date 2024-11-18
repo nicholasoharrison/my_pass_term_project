@@ -1,5 +1,4 @@
-import email
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from .forms import CustomUserCreationForm, SecurityQuestionForm, UsernameForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
@@ -8,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import SessionManager
+from .models import Account, Notification, SessionManager
 from django.http import HttpResponseRedirect
 from functools import wraps
 from .handlers import Question1Handler, Question2Handler, Question3Handler
@@ -72,18 +71,36 @@ def login_view(request):
 
 
 
+# Vault view (function-based)
 @session_login_required
 def vault(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
     if session_manager.has_timed_out():
         session_manager.logout()
-        messages.get_messages(request).used = True
         messages.warning(request, "Your account has been locked due to inactivity.")
         return redirect('login')
-    
+
     session_manager.update_last_activity()
-    return render(request, 'vault.html')
+    user = session_manager.get_current_user()
+    notifications = Notification.objects.filter(user=user, is_read=False)
+    for notification in notifications:
+        notification.is_read = True
+        notification.save()
+
+    return render(request, 'vault_home.html', {'notifications': notifications})
+
+
+# Mark notification as read
+@session_login_required
+def mark_notification_read(request, notification_id):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+    user = session_manager.get_current_user()
+    notification = get_object_or_404(Notification, id=notification_id, user=user)
+    notification.is_read = True
+    notification.save()
+    return redirect('vault')
 
 
 
@@ -241,3 +258,17 @@ def password_reset(request):
             messages.error(request, 'User does not exist. Please check your username.')
 
     return render(request, 'password_reset.html')
+
+# def delete_password(request, password_id):
+#     session_manager = SessionManager()
+#     current_user = session_manager.get_current_user()
+#     account = get_object_or_404(Account, id=password_id, user=current_user)
+
+#     if request.method == 'POST':
+#         account.delete()
+#         return redirect('vault') 
+
+#     return render(request, 'confirm_delete.html', {'account': account})
+#    #fixed duplicate
+
+

@@ -1,0 +1,18 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Your Secure Notes</h2>
+<a href="{% url 'securenote_create' %}">Add New Secure Note</a>
+<ul>
+    {% for note in securenotes %}
+    <li>
+        <a href="{% url 'securenote_detail' note.pk %}">{{ note.title }}</a>
+        (<a href="{% url 'securenote_edit' note.pk %}">Edit</a>,
+         <a href="{% url 'securenote_delete' note.pk %}">Delete</a>)
+    </li>
+    {% empty %}
+    <li>No secure notes saved.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

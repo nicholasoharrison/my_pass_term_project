@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import SecurityQuestion
+from .models import SecurityQuestion, Login, CreditCard, Identity, SecureNote
 
 class CustomUserCreationForm(UserCreationForm):
     q1Answer = forms.CharField(label="What is your favorite color?", max_length=100)
@@ -92,3 +92,22 @@ class SecurityQuestionForm(forms.Form):
 class UsernameForm(forms.Form):
     username = forms.CharField(max_length=150, required=True, label='Enter your username')
 
+class LoginForm(forms.ModelForm):
+    class Meta:
+        model = Login
+        fields = ['site_name', 'site_url', 'username', 'password', 'notes']
+
+class CreditCardForm(forms.ModelForm):
+    class Meta:
+        model = CreditCard
+        fields = ['cardholder_name', 'card_number', 'expiration_date', 'cvv', 'billing_address']
+
+class IdentityForm(forms.ModelForm):
+    class Meta:
+        model = Identity
+        fields = ['full_name', 'date_of_birth', 'passport_number', 'license_number', 'social_security_number', 'notes']
+
+class SecureNoteForm(forms.ModelForm):
+    class Meta:
+        model = SecureNote
+        fields = ['title', 'content']

@@ -1,0 +1,13 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Identity Details</h2>
+<p><strong>Full Name:</strong> {{ identity.full_name }}</p>
+<p><strong>Date of Birth:</strong> {{ identity.date_of_birth|date:"F d, Y" }}</p>
+<p><strong>Passport Number:</strong> {{ identity.passport_number }}</p>
+<p><strong>License Number:</strong> {{ identity.license_number }}</p>
+<p><strong>Social Security Number:</strong> ***-**-{{ identity.social_security_number|slice:"-4:" }}</p>
+<p><strong>Notes:</strong> {{ identity.notes }}</p>
+<a href="{% url 'identity_list' %}">Back to Identities</a>
+{% endblock %}
