@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import SecurityQuestion, Login, CreditCard, Identity, SecureNote
+from .models import Account, SecurityQuestion, Login, CreditCard, Identity, SecureNote
 
 class CustomUserCreationForm(UserCreationForm):
     q1Answer = forms.CharField(label="What is your favorite color?", max_length=100)
@@ -111,3 +111,8 @@ class SecureNoteForm(forms.ModelForm):
     class Meta:
         model = SecureNote
         fields = ['title', 'content']
+
+class AccountForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ['name', 'password']        
