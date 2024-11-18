@@ -1,6 +1,5 @@
-import email
 from django.shortcuts import get_object_or_404, render, redirect
-from .forms import CustomUserCreationForm, SecurityQuestionForm, UsernameForm, EditPasswordForm
+from .forms import CustomUserCreationForm, SecurityQuestionForm, UsernameForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -8,11 +7,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import SessionManager, Password, Account
+from .models import Account, Notification, SessionManager
 from django.http import HttpResponseRedirect
 from functools import wraps
 from .handlers import Question1Handler, Question2Handler, Question3Handler
-from .password_builder import PasswordDirector, SimplePasswordBuilder, ComplexPasswordBuilder, PasswordBuilder
+
 
 
 def session_login_required(view_func): # this customer decorator will check to see if the user is 
@@ -72,22 +71,36 @@ def login_view(request):
 
 
 
+# Vault view (function-based)
 @session_login_required
 def vault(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
     if session_manager.has_timed_out():
         session_manager.logout()
-        messages.get_messages(request).used = True
         messages.warning(request, "Your account has been locked due to inactivity.")
         return redirect('login')
-    
+
     session_manager.update_last_activity()
+    user = session_manager.get_current_user()
+    notifications = Notification.objects.filter(user=user, is_read=False)
+    for notification in notifications:
+        notification.is_read = True
+        notification.save()
 
-    current_user = session_manager.get_current_user()
+    return render(request, 'vault_home.html', {'notifications': notifications})
 
-    user_accounts = Account.objects.filter(user = current_user)
-    return render(request, 'vault.html', {'user_accounts': user_accounts})
+
+# Mark notification as read
+@session_login_required
+def mark_notification_read(request, notification_id):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+    user = session_manager.get_current_user()
+    notification = get_object_or_404(Notification, id=notification_id, user=user)
+    notification.is_read = True
+    notification.save()
+    return redirect('vault')
 
 
 
@@ -102,36 +115,7 @@ def create_password(request):
         return redirect('login')
     
     session_manager.update_last_activity()
-
-
-    password = None
-    if request.method == 'POST':
-        account_name = request.POST.get('account_name')
-        complexity = request.POST.get('complexity')
-        custom_password = request.POST.get('custom_password')
-        
-        if custom_password:
-            password = custom_password
-            messages.success(request, "Your custom password has been saved.")
-        else:
-            if complexity == 'simple':
-                builder = SimplePasswordBuilder()
-            elif complexity == 'complex':
-                builder = ComplexPasswordBuilder()
-            else:
-                messages.error(request, 'Invalid password complexity selection.')
-                return render(request, 'create_password.html')
-
-            director = PasswordDirector(builder)
-            password = director.create_password()
-            
-        current_user = session_manager.get_current_user()
-
-        messages.success(request, f"Generated Password: {password}")
-        Account.objects.create(user=current_user, name=account_name, password=password)
-        return redirect('vault')
-
-    return render(request, 'create_password.html', {'password': password})
+    return render(request, 'create_password.html')
 
 
 
@@ -275,31 +259,14 @@ def password_reset(request):
 
     return render(request, 'password_reset.html')
 
+# def delete_password(request, password_id):
+#     session_manager = SessionManager()
+#     current_user = session_manager.get_current_user()
+#     account = get_object_or_404(Account, id=password_id, user=current_user)
 
+#     if request.method == 'POST':
+#         account.delete()
+#         return redirect('vault') 
 
-def edit_password(request, password_id):
-    session_manager = SessionManager()
-    current_user = session_manager.get_current_user()
-    account = get_object_or_404(Account, id=password_id, user=current_user)
-
-    if request.method == 'POST':
-        form = EditPasswordForm(request.POST, instance=account)
-        if form.is_valid():
-            form.save()
-            return redirect('vault')
-    else:
-        form = EditPasswordForm(instance=account)
-
-    return render(request, 'edit_password.html', {'form': form, 'account': account})
-
-def delete_password(request, password_id):
-    session_manager = SessionManager()
-    current_user = session_manager.get_current_user()
-    account = get_object_or_404(Account, id=password_id, user=current_user)
-
-    if request.method == 'POST':
-        account.delete()
-        return redirect('vault') 
-
-    return render(request, 'confirm_delete.html', {'account': account})
-    return render(request, 'confirm_delete.html', {'account': account})
+#     return render(request, 'confirm_delete.html', {'account': account})
+#    #fixed duplicate
