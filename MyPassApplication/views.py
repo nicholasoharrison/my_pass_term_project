@@ -115,7 +115,37 @@ def create_password(request):
         return redirect('login')
     
     session_manager.update_last_activity()
-    return render(request, 'create_password.html')
+
+
+    password = None
+    if request.method == 'POST':
+        account_name = request.POST.get('account_name')
+        complexity = request.POST.get('complexity')
+        custom_password = request.POST.get('custom_password')
+        
+        if custom_password:
+            password = custom_password
+            messages.success(request, "Your custom password has been saved.")
+        else:
+            if complexity == 'simple':
+                builder = SimplePasswordBuilder()
+            elif complexity == 'complex':
+                builder = ComplexPasswordBuilder()
+            else:
+                messages.error(request, 'Invalid password complexity selection.')
+                return render(request, 'create_password.html')
+
+            director = PasswordDirector(builder)
+            password = director.create_password()
+            
+        current_user = session_manager.get_current_user()
+
+        messages.success(request, f"Generated Password: {password}")
+        Account.objects.create(user=current_user, name=account_name, password=password)
+        return redirect('vault')
+
+    return render(request, 'create_password.html', {'password': password})
+
 
 
 
