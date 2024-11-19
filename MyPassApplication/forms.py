@@ -26,6 +26,7 @@ class CustomUserCreationForm(UserCreationForm):
             )
         return user
 
+#custom validators
     def __init__(self, *args, **kwargs):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)
         self.fields['password1'].validators = []
