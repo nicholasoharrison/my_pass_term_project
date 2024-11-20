@@ -1,16 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Account</h1>
-<p>Your username: <strong>{{ username }}</strong></p>
+<div class="form-container">
+    <h1>Account</h1>
 
-<!-- Link to Vault -->
-<a href="{% url 'vault_home' %}" class="button">Go to Vault</a>
+    <p>Your username: <strong>{{ username }}</strong></p>
+    
+    <a href="{% url 'vault_home' %}" class="button">Go to Vault</a>
+   
+    <a href="{% url 'change_password' %}" class="button">Change Password</a>
 
-<a class="button" href="{% url 'change_password' %}">Change Password</a>
-<form method="post" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button type="submit" class="button">Logout</button>
-</form>
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="button">Logout</button>
+    </form>
+</div>
+
+
 {% endblock %}
-

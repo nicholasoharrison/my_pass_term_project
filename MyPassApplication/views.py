@@ -11,7 +11,7 @@ from .models import Account, Notification, SessionManager
 from django.http import HttpResponseRedirect
 from functools import wraps
 from .handlers import Question1Handler, Question2Handler, Question3Handler
-
+from .password_builder import PasswordDirector, SimplePasswordBuilder, ComplexPasswordBuilder, PasswordBuilder
 
 
 def session_login_required(view_func): # this customer decorator will check to see if the user is 
@@ -103,7 +103,7 @@ def mark_notification_read(request, notification_id):
     return redirect('vault')
 
 
-
+#builder pattern
 @session_login_required
 def create_password(request):
     session_manager = SessionManager()
@@ -140,9 +140,12 @@ def create_password(request):
             
         current_user = session_manager.get_current_user()
 
-        messages.success(request, f"Generated Password: {password}")
-        Account.objects.create(user=current_user, name=account_name, password=password)
-        return redirect('vault')
+
+        Account.objects.create(user=current_user, name=account_name, password=password)        
+        messages.success(request, f"Generated password for '{account_name}' has been saved successfully!")
+        
+        return redirect('vault_home')  
+
 
     return render(request, 'create_password.html', {'password': password})
 

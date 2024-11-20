@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 
 {% block content %}
@@ -8,5 +7,5 @@
 <p><strong>Expiration Date:</strong> {{ creditcard.expiration_date|date:"F Y" }}</p>
 <p><strong>CVV:</strong> ***</p>
 <p><strong>Billing Address:</strong> {{ creditcard.billing_address }}</p>
-<a href="{% url 'creditcard_list' %}">Back to Credit Cards</a>
+<a href="{% url 'creditcard_list' %}" class="button">Back to Credit Cards</a>
 {% endblock %}
