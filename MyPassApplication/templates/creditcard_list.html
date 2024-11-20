@@ -1,21 +1,28 @@
-
 {% extends 'base.html' %}
 
 {% block content %}
 <h2>Your Credit Cards</h2>
-<a href="{% url 'creditcard_create' %}">Add New Credit Card</a>
+
+<!-- Add New Credit Card Button -->
+<a href="{% url 'creditcard_create' %}" class="uk-button uk-button-primary uk-margin-large-top uk-margin-large-bottom uk-width-auto uk-align-center">Add New Credit Card</a>
+
+
 <ul>
     {% for card in creditcards %}
     <li>
-        <a href="{% url 'creditcard_detail' card.pk %}">
+        <a href="{% url 'creditcard_detail' card.pk %}" class="credit-card-link">
             {{ card.cardholder_name }} - Card ending in {{ card.card_number|slice:"-4:" }}
         </a>
-        (<a href="{% url 'creditcard_edit' card.pk %}">Edit</a>,
-         <a href="{% url 'creditcard_delete' card.pk %}">Delete</a>)
+        <!-- Edit and Delete Links -->
+        (<a href="{% url 'creditcard_edit' card.pk %}" class="button">Edit</a>,
+         <a href="{% url 'creditcard_delete' card.pk %}" class="button">Delete</a>)
     </li>
     {% empty %}
     <li>No credit cards saved.</li>
     {% endfor %}
 </ul>
-{% endblock %}
 
+<!-- 'Come Back to Vault' Link -->
+<a href="{% url 'vault_home' %}" class="uk-button uk-button-primary uk-margin-large-top uk-margin-large-bottom uk-width-auto uk-align-center">Come Back to Vault</a>
+
+{% endblock %}

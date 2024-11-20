@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <h1>Welcome to Your Vault</h1>
+
 <ul>
     <li><a href="{% url 'login_list' %}" class="button">Logins</a></li>
     <li><a href="{% url 'creditcard_list' %}" class="button">Credit Cards</a></li>
@@ -10,5 +12,7 @@
 </ul>
 
 <a href="{% url 'create_password' %}" class="button">Add New Password</a>
-{% endblock %}
 
+<a href="{% url 'account' %}" class="button">Go to Account</a>
+
+{% endblock %}

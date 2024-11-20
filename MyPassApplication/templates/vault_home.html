@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <h2>Welcome to Your Vault</h2>
 
 <nav>
     <ul>
-        <li><a href="{% url 'login_list' %}">Logins</a></li>
-        <li><a href="{% url 'creditcard_list' %}">Credit Cards</a></li>
-        <li><a href="{% url 'identity_list' %}">Identities</a></li>
-        <li><a href="{% url 'securenote_list' %}">Secure Notes</a></li>
+        <li><a href="{% url 'login_list' %}" class="credit-card-link">Logins</a></li>
+        <li><a href="{% url 'creditcard_list' %}" class="credit-card-link">Credit Cards</a></li>
+        <li><a href="{% url 'identity_list' %}" class="credit-card-link">Identities</a></li>
+        <li><a href="{% url 'securenote_list' %}" class="credit-card-link">Secure Notes</a></li>
     </ul>
 </nav>
 
@@ -20,7 +21,7 @@
                 {{ notification.message }}
                 <form action="{% url 'mark_notification_read' notification.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit">Mark as Read</button>
+                    <button type="submit" class="button">Mark as Read</button>
                 </form>
             </li>
         {% endfor %}

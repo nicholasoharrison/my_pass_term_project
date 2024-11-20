@@ -3,16 +3,18 @@
 
 {% block content %}
 <h2>Your Logins</h2>
-<a href="{% url 'login_create' %}">Add New Login</a>
+<a href="{% url 'login_create' %}" class="uk-button uk-button-primary uk-margin-large-top uk-margin-large-bottom uk-width-auto uk-align-center">Add New Login</a>
 <ul>
     {% for login in logins %}
     <li>
-        <a href="{% url 'login_detail' login.pk %}">{{ login.site_name }}</a>
-        (<a href="{% url 'login_edit' login.pk %}">Edit</a>,
-         <a href="{% url 'login_delete' login.pk %}">Delete</a>)
+        <a href="{% url 'login_detail' login.pk %}" class ="credit-card-link">{{ login.site_name }}</a>
+        (<a href="{% url 'login_edit' login.pk %}" class ="credit-card-link">Edit</a>,
+         <a href="{% url 'login_delete' login.pk %}" class ="credit-card-link">Delete</a>)         
     </li>
     {% empty %}
     <li>No logins saved.</li>
     {% endfor %}
 </ul>
+<a href="{% url 'vault_home' %}" class="uk-button uk-button-primary uk-margin-large-top uk-margin-large-bottom uk-width-auto uk-align-center">Come Back to Vault</a>
+
 {% endblock %}

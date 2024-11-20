@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Pass{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- Remove UIkit if you're not using it elsewhere -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/uikit@3.6.24/dist/css/uikit.min.css" rel="stylesheet"> -->
 </head>
 <body>
     <header>
@@ -17,6 +20,7 @@
             </ul>
         </nav>
     </header>
+
     {% if messages %}
         <div class="messages">
             <ul>
@@ -32,8 +36,9 @@
     </main>
 
     <footer>
-        <p>&copy; CIS 476 Password Manager  App</p>
+        <p>&copy; CIS 476 Password Manager App</p>
     </footer>
+    
     <script> 
         document.addEventListener('copy', function() {
             console.log('Text copied to clipboard.');

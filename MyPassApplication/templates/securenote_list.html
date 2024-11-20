@@ -2,17 +2,19 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <h2>Your Secure Notes</h2>
-<a href="{% url 'securenote_create' %}">Add New Secure Note</a>
+<a href="{% url 'securenote_create' %}" class="uk-button uk-button-primary uk-margin-large-top uk-margin-large-bottom uk-width-auto uk-align-center">Add New Secure Note</a>
 <ul>
     {% for note in securenotes %}
     <li>
-        <a href="{% url 'securenote_detail' note.pk %}">{{ note.title }}</a>
-        (<a href="{% url 'securenote_edit' note.pk %}">Edit</a>,
-         <a href="{% url 'securenote_delete' note.pk %}">Delete</a>)
+        <a href="{% url 'securenote_detail' note.pk %}" class="credit-card-link">{{ note.title }}</a>
+        (<a href="{% url 'securenote_edit' note.pk %}" class="credit-card-link">Edit</a>,
+         <a href="{% url 'securenote_delete' note.pk %}" class="credit-card-link">Delete</a>)         
     </li>
     {% empty %}
     <li>No secure notes saved.</li>
     {% endfor %}
 </ul>
+<a href="{% url 'vault_home' %}" class="uk-button uk-button-primary uk-margin-large-top uk-margin-large-bottom uk-width-auto uk-align-center">Come Back to Vault</a>
 {% endblock %}
