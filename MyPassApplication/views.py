@@ -140,10 +140,12 @@ def create_password(request):
             
         current_user = session_manager.get_current_user()
 
+
         Account.objects.create(user=current_user, name=account_name, password=password)        
         messages.success(request, f"Generated password for '{account_name}' has been saved successfully!")
         
         return redirect('vault_home')  
+
 
     return render(request, 'create_password.html', {'password': password})
 
