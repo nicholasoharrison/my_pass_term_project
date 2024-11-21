@@ -8,6 +8,7 @@ from .models import Login, CreditCard, Identity, SecureNote, SessionManager
 from .forms import LoginForm, CreditCardForm, IdentityForm, SecureNoteForm
 from .views import session_login_required 
 
+
 class BaseVaultView(View):
     session_manager = None
 
@@ -241,3 +242,4 @@ class SecureNoteDeleteView(BaseVaultView, UserObjectMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Secure note deleted successfully!')
         return super().delete(request, *args, **kwargs)
+    
