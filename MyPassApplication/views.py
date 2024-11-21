@@ -12,6 +12,7 @@ from django.http import HttpResponseRedirect
 from functools import wraps
 from .handlers import Question1Handler, Question2Handler, Question3Handler
 from .password_builder import PasswordDirector, SimplePasswordBuilder, ComplexPasswordBuilder, PasswordBuilder
+from django.contrib.auth.hashers import make_password
 
 
 def session_login_required(view_func): # this customer decorator will check to see if the user is 
@@ -76,6 +77,7 @@ def login_view(request):
 def vault(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
+
     if session_manager.has_timed_out():
         session_manager.logout()
         messages.warning(request, "Your account has been locked due to inactivity.")
@@ -83,12 +85,16 @@ def vault(request):
 
     session_manager.update_last_activity()
     user = session_manager.get_current_user()
+
     notifications = Notification.objects.filter(user=user, is_read=False)
     for notification in notifications:
         notification.is_read = True
         notification.save()
 
-    return render(request, 'vault_home.html', {'notifications': notifications})
+    # Retrieve all saved passwords for the current user
+    saved_passwords = Account.objects.filter(user=user)    
+
+    return render(request, 'vault_home.html', {'notifications': notifications, 'saved_passwords': saved_passwords})
 
 
 # Mark notification as read
@@ -108,6 +114,7 @@ def mark_notification_read(request, notification_id):
 def create_password(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
+
     if session_manager.has_timed_out():
         session_manager.logout()
         messages.get_messages(request).used = True
@@ -137,17 +144,44 @@ def create_password(request):
 
             director = PasswordDirector(builder)
             password = director.create_password()
+
+        # Ensure that the password is not already saved
+        existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=make_password(password)).first()
+        if existing_password:
+            messages.error(request, "This password already exists in your vault!")
+            return render(request, 'create_password.html', {'password': password})    
             
-        current_user = session_manager.get_current_user()
+        # Ask the user if they want to save the generated password
+        save_to_vault = request.POST.get('save_to_vault')
 
+        if save_to_vault == 'yes':
+            # check the password isn't already saved in the vault
+            existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=password.value).first()
+            if existing_password:
+                messages.error(request, "This password already exists in your vault!")
+                return render(request, 'create_password.html', {'password': password.value})
 
-        Account.objects.create(user=current_user, name=account_name, password=password)        
-        messages.success(request, f"Generated password for '{account_name}' has been saved successfully!")
-        
+        # Encrypt the password before saving it to the vault
+            password_encrypted = make_password(password.value)
+            account = Account.objects.create(user=session_manager.get_current_user(), name=account_name, password=password_encrypted)
+            account.suggested = True  # Mark as suggested password
+            account.save()
+            messages.success(request, "Password has been saved to the Vault!")
+
         return redirect('vault_home')  
 
+    return render(request, 'create_password.html', {'password': password}) 
 
-    return render(request, 'create_password.html', {'password': password})
+@session_login_required
+def saved_passwords(request):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
+
+    # Fetch saved passwords for the current logged-in user
+    saved_passwords = Account.objects.filter(user=session_manager.get_current_user())
+    
+    return render(request, 'saved_passwords.html', {'saved_passwords': saved_passwords})
+    
 
 
 
@@ -292,13 +326,17 @@ def password_reset(request):
 
     return render(request, 'password_reset.html')
 
-# def delete_password(request, password_id):
-#     session_manager = SessionManager()
-#     current_user = session_manager.get_current_user()
-#     account = get_object_or_404(Account, id=password_id, user=current_user)
+@session_login_required
+def delete_password(request, pk):
+    session_manager = SessionManager()
+    session_manager.set_request(request)
 
-#     if request.method == 'POST':
-#         account.delete()
-#         return redirect('vault') 
+    # Ensure that only the current user can delete their passwords
+    user = session_manager.get_current_user()
+    password = get_object_or_404(Account, pk=pk, user=user)
 
-#     return render(request, 'confirm_delete.html', {'account': account})
+    if password:
+        password.delete()
+        messages.success(request, 'Password has been deleted successfully.')
+    
+    return redirect('saved_passwords')

@@ -65,7 +65,9 @@ class Password:
 class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vault')
     name = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)  # Store hashed password here
+    suggested = models.BooleanField(default=False)  # New field to mark suggested passwords
+    #created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name} : {self.password}"

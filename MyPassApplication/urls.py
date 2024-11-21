@@ -17,13 +17,15 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('account/', views.account, name='account'),
     path('change-password/', views.change_password, name='change_password'),
+    path('saved-passwords/', views.saved_passwords, name='saved_passwords'),
     path('logout/', views.logout_view, name='logout'),
 
     # Password Reset via Security Questions
     path('enter-username/', views.enter_username, name='enter_username'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('password-reset/', views.password_reset, name='password_reset'),
-   # path('delete_password/<int:password_id>/', views.delete_password, name='delete_password'),
+    path('edit-password/<int:pk>/', views.change_password, name='change_password'),
+    path('delete-password/<int:pk>/', views.delete_password, name='delete_password'),
 
     # Vault Home
     path('vault/', views.vault, name='vault_home'),
