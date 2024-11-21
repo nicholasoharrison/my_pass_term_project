@@ -156,8 +156,9 @@ def create_password(request):
 
         if save_to_vault == 'yes':
             # check the password isn't already saved in the vault
+            # existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=password.value).first()
             print(f"Password type: {type(password)}, value: {password}")
-            # password_value = password.value if hasattr(password, 'value') else password
+            password_value = password.value if hasattr(password, 'value') else password
             existing_password = Account.objects.filter(user=session_manager.get_current_user(),password=make_password(password if isinstance(password, str) else password.value)).first()
 
             if existing_password:
