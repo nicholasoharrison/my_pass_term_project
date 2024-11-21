@@ -222,3 +222,24 @@ input[type="text"], input[type="password"], select, textarea {
     }
 }
 
+.saved-passwords-page .password-item {
+    display: flex;
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 10px; 
+}
+
+.saved-passwords-page .button {
+    margin-right: 10px; 
+}
+
+.saved-passwords-page .button-container {
+    display: flex;
+    gap: 10px; 
+}
+
+
+.saved-passwords-page .show-password {
+    margin-right: 10px;
+}
+
