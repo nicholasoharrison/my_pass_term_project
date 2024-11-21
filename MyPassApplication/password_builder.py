@@ -49,8 +49,7 @@ class PasswordBuilder:
 
         # Generate the password by selecting random characters from the pool
         password_value = ''.join(random.choice(self.character_pool) for _ in range(self._length))
-        return password_value
-        #return Password(password_value)
+        return Password(password_value)
 
 
 class SimplePasswordBuilder(PasswordBuilder):

@@ -156,17 +156,13 @@ def create_password(request):
 
         if save_to_vault == 'yes':
             # check the password isn't already saved in the vault
-            # existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=password.value).first()
-            print(f"Password type: {type(password)}, value: {password}")
-            password_value = password.value if hasattr(password, 'value') else password
-            existing_password = Account.objects.filter(user=session_manager.get_current_user(),password=make_password(password if isinstance(password, str) else password.value)).first()
-
+            existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=password.value).first()
             if existing_password:
                 messages.error(request, "This password already exists in your vault!")
                 return render(request, 'create_password.html', {'password': password.value})
 
         # Encrypt the password before saving it to the vault
-            password_encrypted = make_password(password)
+            password_encrypted = make_password(password.value)
             account = Account.objects.create(user=session_manager.get_current_user(), name=account_name, password=password_encrypted)
             account.suggested = True  # Mark as suggested password
             account.save()
