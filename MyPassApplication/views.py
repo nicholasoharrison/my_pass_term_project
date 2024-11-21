@@ -151,11 +151,10 @@ def create_password(request):
 
 
         # Encrypt the password before saving
-        encrypted_password = cipher_suite.encrypt(password.encode())
+        encrypted_password = cipher_suite.encrypt(password.encode()).decode()
 
         # Check if the encrypted password is already in the database
         existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=encrypted_password).first()
-
         if existing_password:
             messages.error(request, "This password already exists in your vault!")
             return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
@@ -163,14 +162,15 @@ def create_password(request):
         # Save the password in the database if it's not already saved
         save_to_vault = request.POST.get('save_to_vault')
         if save_to_vault == 'yes':  # Only save if checkbox is checked
-            account = Account.objects.create(user=session_manager.get_current_user(), name=account_name, password=encrypted_password)
-            account.suggested = True
-            account.save()
+            new_account = Account.objects.create(user=session_manager.get_current_user(), name=account_name, password=encrypted_password)
+            new_account.suggested = True
+            new_account.save()
             messages.success(request, "Password has been saved to the Vault!")
 
         return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
 
     return render(request, 'create_password.html', {'password': password})
+
 
 @session_login_required
 def saved_passwords(request):
@@ -189,12 +189,15 @@ def saved_passwords(request):
                 'decrypted_password': decrypted_password
             })
         except Exception as e:
+            # Log the error for debugging
+            print(f"Error decrypting password for account {account.name}: {e}")
             decrypted_passwords.append({
                 'account': account,
                 'decrypted_password': "Error decrypting password"
             })
 
     return render(request, 'saved_passwords.html', {'saved_passwords': decrypted_passwords})
+
 
 
 
