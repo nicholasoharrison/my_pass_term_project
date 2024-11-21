@@ -7,13 +7,17 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import Account, Notification, SessionManager
+from .models import Account, Notification, Password, SessionManager
 from django.http import HttpResponseRedirect
 from functools import wraps
 from .handlers import Question1Handler, Question2Handler, Question3Handler
 from .password_builder import PasswordDirector, SimplePasswordBuilder, ComplexPasswordBuilder, PasswordBuilder
-from django.contrib.auth.hashers import make_password
+from cryptography.fernet import Fernet
+from django.conf import settings
 
+
+# Access the encryption key from settings
+cipher_suite = Fernet(settings.ENCRYPTION_KEY)
 
 def session_login_required(view_func): # this customer decorator will check to see if the user is 
                                        # authenticated with session manager before giving them access to pages
@@ -91,8 +95,8 @@ def vault(request):
         notification.is_read = True
         notification.save()
 
-    # Retrieve all saved passwords for the current user
-    saved_passwords = Account.objects.filter(user=user)    
+    # Retrieve all saved passwords for the current user sorted b y django built in ordering
+    saved_passwords = Account.objects.filter(user=user).order_by('-id')    
 
     return render(request, 'vault_home.html', {'notifications': notifications, 'saved_passwords': saved_passwords})
 
@@ -123,13 +127,13 @@ def create_password(request):
     
     session_manager.update_last_activity()
 
-
     password = None
+    account_name = "" 
     if request.method == 'POST':
         account_name = request.POST.get('account_name')
         complexity = request.POST.get('complexity')
         custom_password = request.POST.get('custom_password')
-        
+
         if custom_password:
             password = custom_password
             messages.success(request, "Your custom password has been saved.")
@@ -145,43 +149,53 @@ def create_password(request):
             director = PasswordDirector(builder)
             password = director.create_password()
 
-        # Ensure that the password is not already saved
-        existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=make_password(password.value)).first()
+
+        # Encrypt the password before saving
+        encrypted_password = cipher_suite.encrypt(password.encode())
+
+        # Check if the encrypted password is already in the database
+        existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=encrypted_password).first()
+
         if existing_password:
             messages.error(request, "This password already exists in your vault!")
-            return render(request, 'create_password.html', {'password': password})    
-            
-        # Ask the user if they want to save the generated password
+            return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
+
+        # Save the password in the database if it's not already saved
         save_to_vault = request.POST.get('save_to_vault')
-
-        if save_to_vault == 'yes':
-            # check the password isn't already saved in the vault
-            existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=password.value).first()
-            if existing_password:
-                messages.error(request, "This password already exists in your vault!")
-                return render(request, 'create_password.html', {'password': password.value})
-
-        # Encrypt the password before saving it to the vault
-            password_encrypted = make_password(password.value)
-            account = Account.objects.create(user=session_manager.get_current_user(), name=account_name, password=password_encrypted)
-            account.suggested = True  # Mark as suggested password
+        if save_to_vault == 'yes':  # Only save if checkbox is checked
+            account = Account.objects.create(user=session_manager.get_current_user(), name=account_name, password=encrypted_password)
+            account.suggested = True
             account.save()
             messages.success(request, "Password has been saved to the Vault!")
 
-        return redirect('vault_home')  
+        return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
 
-    return render(request, 'create_password.html', {'password': password}) 
+    return render(request, 'create_password.html', {'password': password})
 
 @session_login_required
 def saved_passwords(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
 
-    # Fetch saved passwords for the current logged-in user
     saved_passwords = Account.objects.filter(user=session_manager.get_current_user())
-    
-    return render(request, 'saved_passwords.html', {'saved_passwords': saved_passwords})
-    
+    decrypted_passwords = []
+
+    for account in saved_passwords:
+        try:
+            # Decrypt the password stored in the 'password' field
+            decrypted_password = cipher_suite.decrypt(account.password.encode()).decode()
+            decrypted_passwords.append({
+                'account': account,
+                'decrypted_password': decrypted_password
+            })
+        except Exception as e:
+            decrypted_passwords.append({
+                'account': account,
+                'decrypted_password': "Error decrypting password"
+            })
+
+    return render(request, 'saved_passwords.html', {'saved_passwords': decrypted_passwords})
+
 
 
 
