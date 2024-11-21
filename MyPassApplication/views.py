@@ -149,11 +149,13 @@ def create_password(request):
             director = PasswordDirector(builder)
             password = director.create_password()
 
+
         # Encrypt the password before saving
         encrypted_password = cipher_suite.encrypt(password.encode())
 
         # Check if the encrypted password is already in the database
         existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=encrypted_password).first()
+
         if existing_password:
             messages.error(request, "This password already exists in your vault!")
             return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
