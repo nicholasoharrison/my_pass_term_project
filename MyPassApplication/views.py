@@ -146,7 +146,7 @@ def create_password(request):
             password = director.create_password()
 
         # Ensure that the password is not already saved
-        existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=make_password(password)).first()
+        existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=make_password(password.value)).first()
         if existing_password:
             messages.error(request, "This password already exists in your vault!")
             return render(request, 'create_password.html', {'password': password})    
