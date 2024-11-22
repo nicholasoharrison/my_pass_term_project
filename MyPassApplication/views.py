@@ -14,6 +14,18 @@ from .handlers import Question1Handler, Question2Handler, Question3Handler
 from .password_builder import PasswordDirector, SimplePasswordBuilder, ComplexPasswordBuilder, PasswordBuilder
 from cryptography.fernet import Fernet
 from django.conf import settings
+from .mediators import UIMediator
+from .components import SavedPasswords, Dashboard
+
+# Initialize mediator
+mediator = UIMediator()
+# Initialize and register components
+saved_passwords_component = SavedPasswords(mediator)
+dashboard_component = Dashboard(mediator)
+
+mediator.register("SavedPasswords", saved_passwords_component)
+mediator.register("Dashboard", dashboard_component)
+
 
 
 # Access the encryption key from settings
@@ -166,6 +178,14 @@ def create_password(request):
             new_account.suggested = True
             new_account.save()
             messages.success(request, "Password has been saved to the Vault!")
+
+             # Notify the mediator after password creation
+        # Notify the mediator about password creation
+        mediator.notify(
+            sender="create_password",
+            event="password_created",
+            data={"id": new_account.id, "account_name": account_name, "password": password},
+        )
 
         return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
 
@@ -353,7 +373,17 @@ def delete_password(request, pk):
     password = get_object_or_404(Account, pk=pk, user=user)
 
     if password:
+        account_name = password.name
         password.delete()
+
+        # Notify the mediator
+        mediator.notify(
+            sender="delete_password",
+            event="password_deleted",
+            data={"account_name": account_name},
+        )    
+    
         messages.success(request, 'Password has been deleted successfully.')
+
     
     return redirect('saved_passwords')
