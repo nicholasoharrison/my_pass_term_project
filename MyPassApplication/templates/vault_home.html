@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Welcome to Your Vault</h2>
+
+<nav>
+    <ul>
+        <li><a href="{% url 'login_list' %}" class="credit-card-link">Logins</a></li>
+        <li><a href="{% url 'creditcard_list' %}" class="credit-card-link">Credit Cards</a></li>
+        <li><a href="{% url 'identity_list' %}" class="credit-card-link">Identities</a></li>
+        <li><a href="{% url 'securenote_list' %}" class="credit-card-link">Secure Notes</a></li>
+        <li><a href="{% url 'saved_passwords' %}" class="credit-card-link">Saved Passwords</a></li>
+    </ul>
+</nav>
+
+{% if account.is_suggested %}
+    <span class="suggested-password">(Suggested password)</span>
+{% endif %}
+
+{% if notifications %}
+    <h3>Notifications:</h3>
+    <ul>
+        {% for notification in notifications %}
+            <li>
+                {{ notification.message }}
+                <form action="{% url 'mark_notification_read' notification.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="button">Mark as Read</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<a href="{% url 'create_password' %}" class="button">Add New Password</a>
+<a href="{% url 'account' %}" class="button">Go to Account</a>
+
+<footer>
+    <p>&copy; CIS 476 Password Manager App</p>
+</footer>
+{% endblock %}

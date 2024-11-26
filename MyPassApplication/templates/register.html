@@ -21,7 +21,82 @@
 
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }} 
+
+            <!-- Username Field -->
+            <p>
+                {{ form.username.label_tag }}
+                {{ form.username }}
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </p>
+
+            <!-- Email Field -->
+            <p>
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </p>
+
+            <!-- Password Field -->
+            <p>
+                {{ form.password1.label_tag }}
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    {% for error in form.password1.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </p>
+
+            <!-- Password Confirmation Field -->
+            <p>
+                {{ form.password2.label_tag }}
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    {% for error in form.password2.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </p>
+
+            <!-- Security Questions -->
+            <p>
+                {{ form.q1Answer.label_tag }}
+                {{ form.q1Answer }}
+                {% if form.q1Answer.errors %}
+                    {% for error in form.q1Answer.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </p>
+
+            <p>
+                {{ form.q2Answer.label_tag }}
+                {{ form.q2Answer }}
+                {% if form.q2Answer.errors %}
+                    {% for error in form.q2Answer.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </p>
+
+            <p>
+                {{ form.q3Answer.label_tag }}
+                {{ form.q3Answer }}
+                {% if form.q3Answer.errors %}
+                    {% for error in form.q3Answer.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </p>
+
             <button type="submit">Register</button>
         </form>
 

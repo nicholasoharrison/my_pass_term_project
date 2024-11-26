@@ -6,25 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Pass{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- will think to use it or not -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/uikit@3.6.24/dist/css/uikit.min.css" rel="stylesheet"> -->
 </head>
 <body>
     <header>
         <nav>
             <ul>
-                <li><a href="{% url 'create_password' %}">Create Password</a></li>
-                <li><a href="{% url 'vault' %}">Vault</a></li>
-                <li><a href="{% url 'account' %}">Account</a></li>
+                <li><a href="{% url 'create_password' %}" class="nav-link">Create Password</a></li>
+                <li><a href="{% url 'vault_home' %}" class="nav-link">Vault</a></li>
+                <li><a href="{% url 'account' %}" class="nav-link">Account</a></li>
             </ul>
         </nav>
     </header>
+
+    {% if messages %}
+        <div class="messages">
+            <ul>
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
 
     <main>
         {% block content %}{% endblock %}
     </main>
 
     <footer>
-        <p>&copy; CIS 476 Password Manager  App</p>
+        <p>&copy; CIS 476 Password Manager App</p>
     </footer>
+    
     <script> 
         document.addEventListener('copy', function() {
             console.log('Text copied to clipboard.');

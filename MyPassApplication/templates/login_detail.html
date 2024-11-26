@@ -1,0 +1,11 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ login.site_name }}</h2>
+<p><strong>Site URL:</strong> {{ login.site_url }}</p>
+<p><strong>Username:</strong> {{ login.username }}</p>
+<p><strong>Password:</strong> {{ login.password }}</p>
+<p><strong>Notes:</strong> {{ login.notes }}</p>
+<a href="{% url 'login_list' %}">Back to Logins</a>
+{% endblock %}

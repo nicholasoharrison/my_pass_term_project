@@ -1,6 +1,7 @@
 
 from pathlib import Path
 import os
+from cryptography.fernet import Fernet
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,7 +11,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zgvuic&hp41e4!@nrs)-hv_eu@mxo5o2nv7yfl!gxm7$q&xf=-'
+
+# Encryption Key for Passwords
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'ztPF3wqDiNOxcmSQQa-C4-TGAXavFwjtPnUsTiLskZI=')
+cipher_suite = Fernet(ENCRYPTION_KEY)
+
+# Django's SECRET_KEY (this is required by Django for security)
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your_secure_django_secret_key')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -27,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
 
     'MyPassApplication'
 ]
@@ -76,21 +85,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
+AUTH_PASSWORD_VALIDATORS = []
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -117,6 +112,7 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'account'

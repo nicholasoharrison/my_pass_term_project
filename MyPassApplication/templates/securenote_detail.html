@@ -1,0 +1,11 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>{{ securenote.title }}</h2>
+<p>{{ securenote.content|linebreaks }}</p>
+<a href="{% url 'securenote_list' %}" class="button">Back to Secure Notes</a>
+<a href="{% url 'vault_home' %}" class="button">Come Back to Vault</a>
+
+{% endblock %}
