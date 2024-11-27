@@ -7,6 +7,7 @@ from django.http import Http404
 from .models import Login, CreditCard, Identity, SecureNote, SessionManager
 from .forms import LoginForm, CreditCardForm, IdentityForm, SecureNoteForm
 from .views import session_login_required 
+import pyperclip
 
 
 class BaseVaultView(View):
@@ -71,6 +72,23 @@ class LoginDetailView(BaseVaultView, UserObjectMixin, DetailView):
     model = Login
     template_name = 'login_detail.html'
     context_object_name = 'login'
+
+    def copy_URL(self):
+        pyperclip.copy(self.site_url)
+        messages.success(self.request, 'Login URL copied successfully!')
+        return super().copy_URL()
+        
+    def copy_username(self):
+        pyperclip.copy(self.username)
+        messages.success(self.request, 'Username copied successfully!')
+        return super().copy_username()
+        
+    def copy_password(self):
+        pyperclip.copy(self.password)
+        messages.success(self.request, 'Login Password copied successfully!')
+        return super().copy_password()
+    
+    
 
 @method_decorator(session_login_required, name='dispatch')
 class LoginUpdateView(BaseVaultView, UserObjectMixin, UpdateView):

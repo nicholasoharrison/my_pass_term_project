@@ -3,9 +3,9 @@
 
 {% block content %}
 <h2>{{ login.site_name }}</h2>
-<p><strong>Site URL:</strong> {{ login.site_url }}</p>
-<p><strong>Username:</strong> {{ login.username }}</p>
-<p><strong>Password:</strong> {{ login.password }}</p>
+<p><strong>Site URL:</strong> {{ login.site_url }} <a>Copy</a></p>
+<p><strong>Username:</strong> {{ login.username }} <a>Copy</a></p>
+<p><strong>Password:</strong> {{ login.password }} <a>Copy</a></p>
 <p><strong>Notes:</strong> {{ login.notes }}</p>
 <a href="{% url 'login_list' %}">Back to Logins</a>
 {% endblock %}
