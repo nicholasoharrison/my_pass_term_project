@@ -99,12 +99,15 @@ class IdentityForm(forms.ModelForm):
     class Meta:
         model = Identity
         fields = [
-            'full_name', 
-            'date_of_birth', 
-            'passport_number', 
-            'license_number', 
-            'social_security_number', 
-            'notes'
+            'user',
+            'full_name',
+            'date_of_birth',
+            'passport_number',
+            'passport_expiration_date',
+            'license_number',
+            'license_expiration_date',
+            'social_security_number',
+            'notes',
         ]
 
 

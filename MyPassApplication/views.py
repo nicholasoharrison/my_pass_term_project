@@ -125,12 +125,12 @@ def mark_notification_read(request, notification_id):
     return redirect('vault')
 
 
-#builder pattern
 @session_login_required
 def create_password(request):
     session_manager = SessionManager()
     session_manager.set_request(request)
 
+    # Check for session timeout
     if session_manager.has_timed_out():
         session_manager.logout()
         messages.get_messages(request).used = True
@@ -140,56 +140,78 @@ def create_password(request):
     session_manager.update_last_activity()
 
     password = None
-    account_name = "" 
-    if request.method == 'POST':
-        account_name = request.POST.get('account_name')
-        complexity = request.POST.get('complexity')
-        custom_password = request.POST.get('custom_password')
+    account_name = ""
+    new_account = None  # Initialize variable to avoid "undefined variable" errors
 
+    if request.method == 'POST':
+        account_name = request.POST.get('account_name', '').strip()
+        complexity = request.POST.get('complexity', '').strip()
+        custom_password = request.POST.get('custom_password', '').strip()
+
+        # Handle custom password
         if custom_password:
             password = custom_password
             messages.success(request, "Your custom password has been saved.")
         else:
+            # Validate complexity and create password using the builder pattern
             if complexity == 'simple':
                 builder = SimplePasswordBuilder()
             elif complexity == 'complex':
                 builder = ComplexPasswordBuilder()
             else:
                 messages.error(request, 'Invalid password complexity selection.')
-                return render(request, 'create_password.html')
-
+                return render(request, 'create_password.html', {'account_name': account_name})
+            
             director = PasswordDirector(builder)
             password = director.create_password()
 
-
         # Encrypt the password before saving
-        encrypted_password = cipher_suite.encrypt(password.encode()).decode()
+        try:
+            encrypted_password = cipher_suite.encrypt(password.encode()).decode()
+        except Exception as e:
+            messages.error(request, f"Error encrypting password: {e}")
+            return render(request, 'create_password.html', {'account_name': account_name})
 
-        # Check if the encrypted password is already in the database
-        existing_password = Account.objects.filter(user=session_manager.get_current_user(), password=encrypted_password).first()
+        # Check if the encrypted password already exists in the database
+        existing_password = Account.objects.filter(
+            user=session_manager.get_current_user(),
+            password=encrypted_password
+        ).first()
+
         if existing_password:
             messages.error(request, "This password already exists in your vault!")
             return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
 
-        # Save the password in the database if it's not already saved
+        # Save the password if "save_to_vault" checkbox is checked
         save_to_vault = request.POST.get('save_to_vault')
         if save_to_vault == 'yes':  # Only save if checkbox is checked
-            new_account = Account.objects.create(user=session_manager.get_current_user(), name=account_name, password=encrypted_password)
-            new_account.suggested = True
-            new_account.save()
-            messages.success(request, "Password has been saved to the Vault!")
+            try:
+                new_account = Account.objects.create(
+                    user=session_manager.get_current_user(),
+                    name=account_name,
+                    password=encrypted_password
+                )
+                new_account.suggested = True
+                new_account.save()
+                messages.success(request, "Password has been saved to the Vault!")
 
-             # Notify the mediator after password creation
-        # Notify the mediator about password creation
-        mediator.notify(
-            sender="create_password",
-            event="password_created",
-            data={"id": new_account.id, "account_name": account_name, "password": password},
-        )
+                # Notify the mediator about password creation
+                mediator.notify(
+                    sender="create_password",
+                    event="password_created",
+                    data={"id": new_account.id, "account_name": account_name, "password": password},
+                )
+            except Exception as e:
+                messages.error(request, f"Error saving password: {e}")
+                return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
+        else:
+            messages.warning(request, "Password not saved to the Vault.")
 
+        # Return success or failure page after processing
         return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
 
-    return render(request, 'create_password.html', {'password': password})
+    # GET request handling
+    return render(request, 'create_password.html', {'password': password, 'account_name': account_name})
 
 
 @session_login_required

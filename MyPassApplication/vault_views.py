@@ -7,6 +7,9 @@ from django.http import Http404
 from .models import Login, CreditCard, Identity, SecureNote, SessionManager
 from .forms import LoginForm, CreditCardForm, IdentityForm, SecureNoteForm
 from .views import session_login_required 
+from .views import mediator
+from django.apps import apps
+
 
 
 class BaseVaultView(View):
@@ -164,6 +167,13 @@ class IdentityCreateView(BaseVaultView, CreateView):
     def form_valid(self, form):
         form.instance.user = self.session_manager.get_current_user()
         messages.success(self.request, 'Identity added successfully!')
+
+        # Notify the mediator after Identity creation
+        mediator.notify(
+            sender="IdentityCreateView",
+            event="identity_created",
+            data={"full_name": form.instance.full_name, "user_id": form.instance.user.id},
+        )
         return super().form_valid(form)
 
 @method_decorator(session_login_required, name='dispatch')

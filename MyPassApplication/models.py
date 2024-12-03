@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
+from .observer_registry import ObserverRegistry
 
 
 class SessionManager:
@@ -33,6 +34,7 @@ class SessionManager:
             try:
                 return User.objects.get(id=user_id)
             except User.DoesNotExist:
+                self.request.session.flush()
                 return None
         return None
 
@@ -71,6 +73,16 @@ class Account(models.Model):
 
     def __str__(self):
         return f"{self.name} : {self.password}"
+    
+    def save(self, *args, **kwargs):
+        created = self._state.adding  
+        super().save(*args, **kwargs)
+        if created:
+            # Notify observers about the password creation
+            ObserverRegistry.notify_observers(
+                event="password_created",
+                data={"id": self.id, "name": self.name}
+            )
 
 
 class Login(models.Model):
@@ -103,14 +115,17 @@ class CreditCard(models.Model):
     def check_expiration(self):
         upcoming_date = timezone.now().date() + timedelta(days=30)
         if self.expiration_date and self.expiration_date <= upcoming_date:
-            message = f"Your credit card ending in {self.card_number[-4:]} is expiring on {self.expiration_date}."
-            Notification.objects.create(user=self.user, message=message)
+            # Notify observers about the credit card expiration
+            ObserverRegistry.notify_observers(
+                event="credit_card_expiring",
+                data={"user_id": self.user.id, "card_number": self.card_number[-4:]}
+            )
 
 
 class Identity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(null=True, blank=True)
     passport_number = models.CharField(max_length=20, blank=True)
     passport_expiration_date = models.DateField(null=True, blank=True)
     license_number = models.CharField(max_length=20, blank=True)
@@ -132,20 +147,25 @@ class Identity(models.Model):
         upcoming_date = timezone.now().date() + timedelta(days=30)
         if self.passport_expiration_date and self.passport_expiration_date <= upcoming_date:
             if not self.passport_notified:
-                message = f"Your passport is expiring on {self.passport_expiration_date}."
-                Notification.objects.create(user=self.user, message=message)
+                # Notify observers about the passport expiration
+                ObserverRegistry.notify_observers(
+                    event="passport_expiring",
+                    data={"user_id": self.user.id, "expiration_date": self.passport_expiration_date}
+                )
                 self.passport_notified = True
-                super().save(update_fields=['passport_notified'])
+                self.save(update_fields=['passport_notified'])
 
     def check_license_expiration(self):
         upcoming_date = timezone.now().date() + timedelta(days=30)
         if self.license_expiration_date and self.license_expiration_date <= upcoming_date:
             if not self.license_notified:
-                message = f"Your driver's license is expiring on {self.license_expiration_date}."
-                Notification.objects.create(user=self.user, message=message)
+                # Notify observers about the license expiration
+                ObserverRegistry.notify_observers(
+                    event="license_expiring",
+                    data={"user_id": self.user.id, "expiration_date": self.license_expiration_date}
+                )
                 self.license_notified = True
-                super().save(update_fields=['license_notified'])
-
+                self.save(update_fields=['license_notified'])
 
 class SecureNote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
