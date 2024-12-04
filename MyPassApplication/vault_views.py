@@ -10,6 +10,8 @@ from .views import session_login_required
 from .views import mediator
 from django.apps import apps
 import pyperclip
+from datetime import date, timedelta
+
 
 
 class BaseVaultView(View):
@@ -166,7 +168,7 @@ class CreditCardDeleteView(BaseVaultView, UserObjectMixin, DeleteView):
         messages.success(self.request, 'Credit card deleted successfully!')
         return super().delete(request, *args, **kwargs)
 
-# Views for Identity Data Type
+
 @method_decorator(session_login_required, name='dispatch')
 class IdentityListView(BaseVaultView, ListView):
     model = Identity
@@ -175,12 +177,38 @@ class IdentityListView(BaseVaultView, ListView):
 
     def get_queryset(self):
         user = self.session_manager.get_current_user()
-
-        # Fetch all identities belonging to the current user
         identities = Identity.objects.filter(user=user)
 
-        # Identify expired identities
-        expired_identities = identities.filter(expiration_date__lt=date.today())
+        today = date.today()
+        upcoming_date = today + timedelta(days=30)  # Adjust the number of days as needed
+
+        # Identify expired passports
+        expired_passport_identities = identities.filter(
+            passport_expiration_date__lt=today
+        )
+
+        # Identify passports expiring soon
+        expiring_passport_identities = identities.filter(
+            passport_expiration_date__gte=today,
+            passport_expiration_date__lte=upcoming_date
+        )
+
+        # Identify expired licenses
+        expired_license_identities = identities.filter(
+            license_expiration_date__lt=today
+        )
+
+        # Identify licenses expiring soon
+        expiring_license_identities = identities.filter(
+            license_expiration_date__gte=today,
+            license_expiration_date__lte=upcoming_date
+        )
+
+        # Combine the expired identities
+        expired_identities = expired_passport_identities.union(expired_license_identities)
+
+        # Combine the expiring identities
+        expiring_identities = expiring_passport_identities.union(expiring_license_identities)
 
         # Notify mediator about expired items
         for identity in expired_identities:
@@ -190,18 +218,53 @@ class IdentityListView(BaseVaultView, ListView):
                 data={
                     "user_id": identity.user.id,
                     "full_name": identity.full_name,
-                    "expiration_date": identity.expiration_date,
+                    "passport_expiration_date": identity.passport_expiration_date,
+                    "license_expiration_date": identity.license_expiration_date,
+                },
+            )
+
+        # Notify mediator about expiring soon items
+        for identity in expiring_identities:
+            mediator.notify(
+                sender="IdentityListView",
+                event="identity_expiring_soon",
+                data={
+                    "user_id": identity.user.id,
+                    "full_name": identity.full_name,
+                    "passport_expiration_date": identity.passport_expiration_date,
+                    "license_expiration_date": identity.license_expiration_date,
                 },
             )
 
         # Add warning messages for expired items
         for expired_identity in expired_identities:
-            messages.warning(
-                self.request,
-                f"The identity for {expired_identity.full_name} has expired on {expired_identity.expiration_date}. Please update it.",
-            )
+            if expired_identity.passport_expiration_date and expired_identity.passport_expiration_date < today:
+                messages.warning(
+                    self.request,
+                    f"The passport for {expired_identity.full_name} has expired on {expired_identity.passport_expiration_date}. Please update it.",
+                )
+            if expired_identity.license_expiration_date and expired_identity.license_expiration_date < today:
+                messages.warning(
+                    self.request,
+                    f"The license for {expired_identity.full_name} has expired on {expired_identity.license_expiration_date}. Please update it.",
+                )
+
+        # Add warning messages for expiring soon items
+        for expiring_identity in expiring_identities:
+            if expiring_identity.passport_expiration_date and today <= expiring_identity.passport_expiration_date <= upcoming_date:
+                messages.warning(
+                    self.request,
+                    f"The passport for {expiring_identity.full_name} will expire on {expiring_identity.passport_expiration_date}. Please renew it soon.",
+                )
+            if expiring_identity.license_expiration_date and today <= expiring_identity.license_expiration_date <= upcoming_date:
+                messages.warning(
+                    self.request,
+                    f"The license for {expiring_identity.full_name} will expire on {expiring_identity.license_expiration_date}. Please renew it soon.",
+                )
 
         return identities
+
+
 
 @method_decorator(session_login_required, name='dispatch')
 class IdentityCreateView(BaseVaultView, UserFormValidMixin, CreateView):

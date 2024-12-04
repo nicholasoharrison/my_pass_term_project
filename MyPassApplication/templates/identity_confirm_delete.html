@@ -6,8 +6,8 @@
     <p>Are you sure you want to delete the identity for <strong>{{ identity.full_name }}</strong>?</p>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" class="uk-button uk-button-danger">Yes, delete</button>
-        <a href="{% url 'identity_list' %}" class="uk-button uk-button-default">Cancel</a>
+        <button type="submit" class="button">Yes, delete</button>
+        <a href="{% url 'identity_list' %}" class="button">Cancel</a>
     </form>
 </div>
 {% endblock %}

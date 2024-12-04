@@ -4,6 +4,7 @@ pip install -r requirements.txt
 
 to activate encryption library:
 pip install cryptography
+pip install pyperclip
 in terminal type : cd /workspaces/my_pass_term_project/MyPass
 -> python generate_encription_key.py
 Run this script once, and it will print out the key. Copy that key and store it securely in your Django settings.
