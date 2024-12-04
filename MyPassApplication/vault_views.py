@@ -174,9 +174,35 @@ class IdentityListView(BaseVaultView, ListView):
     context_object_name = 'identities'
 
     def get_queryset(self):
-       user = self.session_manager.get_current_user()  
-       return Identity.objects.filter(user=user)
-   
+        user = self.session_manager.get_current_user()
+
+        # Fetch all identities belonging to the current user
+        identities = Identity.objects.filter(user=user)
+
+        # Identify expired identities
+        expired_identities = identities.filter(expiration_date__lt=date.today())
+
+        # Notify mediator about expired items
+        for identity in expired_identities:
+            mediator.notify(
+                sender="IdentityListView",
+                event="identity_expired",
+                data={
+                    "user_id": identity.user.id,
+                    "full_name": identity.full_name,
+                    "expiration_date": identity.expiration_date,
+                },
+            )
+
+        # Add warning messages for expired items
+        for expired_identity in expired_identities:
+            messages.warning(
+                self.request,
+                f"The identity for {expired_identity.full_name} has expired on {expired_identity.expiration_date}. Please update it.",
+            )
+
+        return identities
+
 @method_decorator(session_login_required, name='dispatch')
 class IdentityCreateView(BaseVaultView, UserFormValidMixin, CreateView):
     model = Identity

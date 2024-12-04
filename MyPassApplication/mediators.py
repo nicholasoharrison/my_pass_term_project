@@ -27,7 +27,9 @@ class UIMediator:
 
         elif event in ("secure_note_created", "secure_note_deleted", "secure_note_updated"):
             self._handle_secure_note_event(event, data)
-
+        elif event == "identity_expired":
+            self._handle_identity_expired_event(data)
+        
         else:
             print(f"Unhandled event: {event}")
 
@@ -86,3 +88,10 @@ class UIMediator:
         elif event == "secure_note_updated":
             if "Dashboard" in self.components:
                 self.components["Dashboard"].refresh_dashboard(data)
+
+
+    def _handle_identity_expired_event(self, data):
+     if "Dashboard" in self.components:
+         self.components["Dashboard"].refresh_dashboard(data)
+     else:
+         print("Error: 'Dashboard' component not registered.")

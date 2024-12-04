@@ -3,6 +3,8 @@ from django.apps import AppConfig
 from .components import SavedPasswords, Dashboard
 from .mediators import UIMediator
 from .observer_registry import ObserverRegistry
+from .components import SavedPasswords, Dashboard
+from .mediators import UIMediator
 
 
 class MypassapplicationConfig(AppConfig):
@@ -19,10 +21,13 @@ class MypassapplicationConfig(AppConfig):
 
         # Register components with the mediator
         mediator.register("SavedPasswords", saved_passwords)
-        mediator.register("Dashboard", dashboard)
-
+        mediator.register("Dashboard", dashboard)        
+        
         # Register observers
         ObserverRegistry.register_observer("password_created", saved_passwords)
         ObserverRegistry.register_observer("password_created", dashboard)
         ObserverRegistry.register_observer("password_deleted", saved_passwords)
         ObserverRegistry.register_observer("password_deleted", dashboard)
+
+
+        
