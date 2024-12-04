@@ -154,8 +154,8 @@ class IdentityListView(BaseVaultView, ListView):
     context_object_name = 'identities'
 
     def get_queryset(self):
-        user = self.session_manager.get_current_user()
-        return Identity.objects.filter(user=user)
+       user = self.session_manager.get_current_user()  
+       return Identity.objects.filter(user=user)
 
 @method_decorator(session_login_required, name='dispatch')
 class IdentityCreateView(BaseVaultView, CreateView):
@@ -166,15 +166,19 @@ class IdentityCreateView(BaseVaultView, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.session_manager.get_current_user()
-        messages.success(self.request, 'Identity added successfully!')
+        response = super().form_valid(form)
+
+        # Log the identity creation for debugging
+        print(f"Identity created: {form.instance.full_name} for user {form.instance.user.id}")        
 
         # Notify the mediator after Identity creation
         mediator.notify(
             sender="IdentityCreateView",
             event="identity_created",
-            data={"full_name": form.instance.full_name, "user_id": form.instance.user.id},
+            data={"user_id": form.instance.user.id, "full_name": form.instance.full_name},
         )
-        return super().form_valid(form)
+        messages.success(self.request, "Identity added successfully!")
+        return response
 
 @method_decorator(session_login_required, name='dispatch')
 class IdentityDetailView(BaseVaultView, UserObjectMixin, DetailView):
@@ -200,9 +204,19 @@ class IdentityDeleteView(BaseVaultView, UserObjectMixin, DeleteView):
     success_url = reverse_lazy('identity_list')
 
     def delete(self, request, *args, **kwargs):
-        messages.success(self.request, 'Identity deleted successfully!')
-        return super().delete(request, *args, **kwargs)
+        identity = self.get_object()
+        messages.success(request, f'Identity for {identity.full_name} deleted successfully!')
 
+        # Notify the mediator about the deletion
+        mediator.notify(
+            sender="IdentityDeleteView",
+            event="identity_deleted",
+            data={
+                "user_id": identity.user.id,
+                "full_name": identity.full_name,
+            },
+        )
+        return super().delete(request, *args, **kwargs)
 # Views for SecureNote Data Type
 @method_decorator(session_login_required, name='dispatch')
 class SecureNoteListView(BaseVaultView, ListView):

@@ -98,8 +98,7 @@ class CreditCardForm(forms.ModelForm):
 class IdentityForm(forms.ModelForm):
     class Meta:
         model = Identity
-        fields = [
-            'user',
+        fields = [            
             'full_name',
             'date_of_birth',
             'passport_number',
