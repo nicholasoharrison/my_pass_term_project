@@ -44,7 +44,7 @@ class UIMediator:
             if "Dashboard" in self.components:
                 self.components["Dashboard"].refresh_dashboard(data)
         elif event == "password_updated":
-            if "SavedPasswords" in self.components:
+            if "SavedPasswords" in self.components :
                 self.components["SavedPasswords"].update_password(data)
             if "Dashboard" in self.components:
                 self.components["Dashboard"].refresh_dashboard(data)
@@ -74,7 +74,9 @@ class UIMediator:
                 self.components["Dashboard"].refresh_dashboard(data)
 
     def _handle_secure_note_event(self, event, data):
-        
+        """
+        Handle events related to secure notes.
+        """
         if event == "secure_note_created":
             if "Dashboard" in self.components:
                 self.components["Dashboard"].refresh_dashboard(data)

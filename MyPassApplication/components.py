@@ -12,12 +12,11 @@ class SavedPasswords(Observer):
     def remove_password(self, data):
         print(f"SavedPasswords: Removed password data: {data}")
         # Inform the mediator about the removal
-        self.mediator.notify("SavedPasswords", "password_deleted", data)
+        #self.mediator.notify("SavedPasswords", "password_deleted", data)
 
     def add_password(self, data):
         print(f"SavedPasswords: Added password data: {data}")
-        # Inform the mediator about the addition
-        self.mediator.notify("SavedPasswords", "password_created", data)
+        
 
     def update(self, event, data):
         if event == "password_created":

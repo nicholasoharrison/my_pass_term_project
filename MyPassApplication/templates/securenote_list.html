@@ -9,8 +9,8 @@
     {% for note in securenotes %}
     <li>
         <a href="{% url 'securenote_detail' note.pk %}" class="credit-card-link">{{ note.title }}</a>
-        (<a href="{% url 'securenote_edit' note.pk %}" class="credit-card-link">Edit</a>,
-         <a href="{% url 'securenote_delete' note.pk %}" class="credit-card-link">Delete</a>)         
+        (<a href="{% url 'securenote_edit' note.pk %}" class="button">Edit</a>,
+         <a href="{% url 'securenote_delete' note.pk %}" class="button">Delete</a>)         
     </li>
     {% empty %}
     <li>No secure notes saved.</li>

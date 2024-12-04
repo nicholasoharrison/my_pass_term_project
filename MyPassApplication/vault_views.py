@@ -9,7 +9,7 @@ from .forms import LoginForm, CreditCardForm, IdentityForm, SecureNoteForm
 from .views import session_login_required 
 from .views import mediator
 from django.apps import apps
-
+import pyperclip
 
 
 class BaseVaultView(View):
@@ -35,11 +35,11 @@ class UserObjectMixin:
         if obj.user != self.session_manager.get_current_user():
             raise Http404("You do not have permission to access this item.")
         return obj
-
+class UserFormValidMixin:
     def form_valid(self, form):
         form.instance.user = self.session_manager.get_current_user()
-        return super().form_valid(form)
-
+        return super().form_valid(form)    
+    
 # Vault Home View
 @method_decorator(session_login_required, name='dispatch')
 class VaultHomeView(BaseVaultView, View):
@@ -58,14 +58,13 @@ class LoginListView(BaseVaultView, ListView):
         return Login.objects.filter(user=user)
 
 @method_decorator(session_login_required, name='dispatch')
-class LoginCreateView(BaseVaultView, CreateView):
+class LoginCreateView(BaseVaultView, UserFormValidMixin, CreateView):
     model = Login
     form_class = LoginForm
     template_name = 'login_form.html'
     success_url = reverse_lazy('login_list')
 
     def form_valid(self, form):
-        form.instance.user = self.session_manager.get_current_user()
         messages.success(self.request, 'Login item added successfully!')
         return super().form_valid(form)
 
@@ -75,8 +74,29 @@ class LoginDetailView(BaseVaultView, UserObjectMixin, DetailView):
     template_name = 'login_detail.html'
     context_object_name = 'login'
 
+    # """"""
+    # code Michael Sepsey
+    # """"""
+    def copy_URL(self):
+        pyperclip.copy(self.object.site_url)
+        messages.success(self.request, 'Login URL copied successfully!')
+        return redirect('login_detail', pk=self.object.pk)
+        
+    def copy_username(self):
+        pyperclip.copy(self.object.username)
+        messages.success(self.request, 'Username copied successfully!')
+        return redirect('login_detail', pk=self.object.pk)
+        
+    def copy_password(self):
+        pyperclip.copy(self.object.password)
+        messages.success(self.request, 'Login Password copied successfully!')
+        return redirect('login_detail', pk=self.object.pk)
+    
+
+
+
 @method_decorator(session_login_required, name='dispatch')
-class LoginUpdateView(BaseVaultView, UserObjectMixin, UpdateView):
+class LoginUpdateView(BaseVaultView, UserObjectMixin, UserFormValidMixin, UpdateView):
     model = Login
     form_class = LoginForm
     template_name = 'login_form.html'
@@ -108,7 +128,7 @@ class CreditCardListView(BaseVaultView, ListView):
         return CreditCard.objects.filter(user=user)
 
 @method_decorator(session_login_required, name='dispatch')
-class CreditCardCreateView(BaseVaultView, CreateView):
+class CreditCardCreateView(BaseVaultView, UserFormValidMixin, CreateView):
     model = CreditCard
     form_class = CreditCardForm
     template_name = 'creditcard_form.html'
@@ -126,7 +146,7 @@ class CreditCardDetailView(BaseVaultView, UserObjectMixin, DetailView):
     context_object_name = 'creditcard'
 
 @method_decorator(session_login_required, name='dispatch')
-class CreditCardUpdateView(BaseVaultView, UserObjectMixin, UpdateView):
+class CreditCardUpdateView(BaseVaultView, UserObjectMixin, UserFormValidMixin, UpdateView):
     model = CreditCard
     form_class = CreditCardForm
     template_name = 'creditcard_form.html'
@@ -156,16 +176,15 @@ class IdentityListView(BaseVaultView, ListView):
     def get_queryset(self):
        user = self.session_manager.get_current_user()  
        return Identity.objects.filter(user=user)
-
+   
 @method_decorator(session_login_required, name='dispatch')
-class IdentityCreateView(BaseVaultView, CreateView):
+class IdentityCreateView(BaseVaultView, UserFormValidMixin, CreateView):
     model = Identity
     form_class = IdentityForm
     template_name = 'identity_form.html'
     success_url = reverse_lazy('identity_list')
 
-    def form_valid(self, form):
-        form.instance.user = self.session_manager.get_current_user()
+    def form_valid(self, form):        
         response = super().form_valid(form)
 
         # Log the identity creation for debugging
@@ -187,7 +206,7 @@ class IdentityDetailView(BaseVaultView, UserObjectMixin, DetailView):
     context_object_name = 'identity'
 
 @method_decorator(session_login_required, name='dispatch')
-class IdentityUpdateView(BaseVaultView, UserObjectMixin, UpdateView):
+class IdentityUpdateView(BaseVaultView, UserObjectMixin, UserFormValidMixin, UpdateView):
     model = Identity
     form_class = IdentityForm
     template_name = 'identity_form.html'
@@ -229,7 +248,7 @@ class SecureNoteListView(BaseVaultView, ListView):
         return SecureNote.objects.filter(user=user)
 
 @method_decorator(session_login_required, name='dispatch')
-class SecureNoteCreateView(BaseVaultView, CreateView):
+class SecureNoteCreateView(BaseVaultView, UserFormValidMixin, CreateView):
     model = SecureNote
     form_class = SecureNoteForm
     template_name = 'securenote_form.html'
@@ -247,7 +266,7 @@ class SecureNoteDetailView(BaseVaultView, UserObjectMixin, DetailView):
     context_object_name = 'securenote'
 
 @method_decorator(session_login_required, name='dispatch')
-class SecureNoteUpdateView(BaseVaultView, UserObjectMixin, UpdateView):
+class SecureNoteUpdateView(BaseVaultView, UserObjectMixin, UserFormValidMixin, UpdateView):
     model = SecureNote
     form_class = SecureNoteForm
     template_name = 'securenote_form.html'

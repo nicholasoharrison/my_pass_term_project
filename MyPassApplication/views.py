@@ -243,8 +243,6 @@ def saved_passwords(request):
 
 
 
-
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)

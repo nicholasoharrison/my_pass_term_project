@@ -8,6 +8,7 @@ from .vault_views import (
     SecureNoteListView, SecureNoteCreateView, SecureNoteDetailView, SecureNoteUpdateView, SecureNoteDeleteView,
 )
 from . import views
+from MyPassApplication import vault_views
 
 urlpatterns = [
     # Authentication and Account Management
@@ -51,7 +52,7 @@ urlpatterns = [
     path('vault/identities/', IdentityListView.as_view(), name='identity_list'),
     path('vault/identities/new/', IdentityCreateView.as_view(), name='identity_create'),
     path('vault/identities/<int:pk>/', IdentityDetailView.as_view(), name='identity_detail'),
-    path('vault/identities/<int:pk>/edit/', IdentityUpdateView.as_view(), name='identity_edit'),
+    path('vault/identities/<int:pk>/edit/', IdentityUpdateView.as_view(), name='identity_update'),
     path('vault/identities/<int:pk>/delete/', IdentityDeleteView.as_view(), name='identity_delete'),
 
     # Secure Note URLs

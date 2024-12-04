@@ -9,5 +9,5 @@
 <p><strong>License Number:</strong> {{ identity.license_number }}</p>
 <p><strong>Social Security Number:</strong> ***-**-{{ identity.social_security_number|slice:"-4:" }}</p>
 <p><strong>Notes:</strong> {{ identity.notes }}</p>
-<a href="{% url 'identity_list' %}">Back to Identities</a>
+<a href="{% url 'identity_list' %}" class="button">Back to Identities </a>
 {% endblock %}

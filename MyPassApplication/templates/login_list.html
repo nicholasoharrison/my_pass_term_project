@@ -8,8 +8,8 @@
     {% for login in logins %}
     <li>
         <a href="{% url 'login_detail' login.pk %}" class ="credit-card-link">{{ login.site_name }}</a>
-        (<a href="{% url 'login_edit' login.pk %}" class ="credit-card-link">Edit</a>,
-         <a href="{% url 'login_delete' login.pk %}" class ="credit-card-link">Delete</a>)         
+        (<a href="{% url 'login_edit' login.pk %}" class="button">Edit</a>,
+         <a href="{% url 'login_delete' login.pk %}" class="button">Delete</a>)         
     </li>
     {% empty %}
     <li>No logins saved.</li>
